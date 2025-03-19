@@ -347,5 +347,59 @@ ax[0].set_xlim(0,3)
 ax[0].set_ylim(0,3)
 plt.savefig('PredProbabilities.pdf')
 # -
+# ## Analysis per mass bin
+
+
+# +
+roger_models = []
+for i in range(4):
+    ind_aux = gal_train_ind[np.where( (data[gal_train_ind, 2] > mass_bins[i]) & (data[gal_train_ind, 2] < mass_bins[i+1]))[0]]
+        
+    comments = f""" 
+          ROGER2 model for isolated galaxy clusters with masses
+          between  10^{mass_bins[i]} < M < 10^{mass_bins[i+1]}.
+        """
+    
+    roger_models.append( roger.RogerModel(x_dataset = data[ind_aux, 2:], y_dataset = data[ind_aux, 1], comments=comments, 
+                          ml_models = [KNeighborsClassifier(n_neighbors=63), RandomForestClassifier(max_depth=2, random_state=0)]) )
+
+for model in roger_models: model.train()
+
+# +
+roger_models = []
+for i in range(4):
+    ind_aux = gal_train_ind[np.where( (data[gal_train_ind, 2] > mass_bins[i]) & (data[gal_train_ind, 2] < mass_bins[i+1]))[0]]
+        
+    comments = f""" 
+          ROGER2 model for isolated galaxy clusters with masses
+          between  10^{mass_bins[i]} < M < 10^{mass_bins[i+1]}.
+        """
+    
+    roger_models.append( roger.RogerModel(x_dataset = data[ind_aux, 2:], y_dataset = data[ind_aux, 1], comments=comments, 
+                          ml_models = [KNeighborsClassifier(n_neighbors=63), RandomForestClassifier(max_depth=2, random_state=0)]) )
+
+for model in roger_models: model.train()
+# -
+
+for models in roger_models:
+    # Suponiendo que tienes un modelo entrenado llamado "modelo"
+    for i, model in enumerate(models.ml_models):
+        dump(model, f'../data/models/roger2_massbins_{i}.joblib')  
+
+i = 0
+for i in range(4):
+    model = roger_models[i]
+    
+    ind_aux = gal_test_ind[np.where( (data[gal_test_ind, 2] > mass_bins[i]) & (data[gal_test_ind, 2] < mass_bins[i+1]))[0]]
+    
+    real_class = data[gal_test_ind, 1]
+    
+    pred_class = model.predict_class(data[gal_test_ind, 2:], n_model=0)
+    conf_mat = model.confusion_matrix(real_class, pred_class)
+    
+    plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True, class_names=labels)
+    
+    plt.savefig(f'../graphs/confusionMatrix_{i}.pdf')
+    plt.clf()
 
 
