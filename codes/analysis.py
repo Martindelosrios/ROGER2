@@ -8,7 +8,7 @@ import sklearn as sk
 import pandas as pd
 from scipy.stats import binned_statistic_2d
 import seaborn as sns
-
+import emcee
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.datasets import make_classification
 
@@ -249,24 +249,32 @@ cl_test_ind = random_ind[ntrain:]
 gal_train_ind = np.where(np.isin(data[:,0], cl_train_ind) == True)[0]
 gal_test_ind = np.where(np.isin(data[:,0], cl_test_ind) == True)[0]
 
+len(gal_train_ind)
+
+len(gal_test_ind)
+
 # +
 comments = """ 
       ROGER2 model for isolated galaxy clusters with masses
       bigger than >10^{13} M_{sun}.
     """
 
-Roger2_small = roger.RogerModel(x_dataset = data[gal_train_ind, 3:], y_dataset = data[gal_train_ind, 1], comments=comments, 
+Roger2 = roger.RogerModel(x_dataset = data[gal_train_ind, 2:], y_dataset = data[gal_train_ind, 1], comments=comments, 
                           ml_models = [KNeighborsClassifier(n_neighbors=63), RandomForestClassifier(max_depth=2, random_state=0)])
 # -
 
-Roger2_small.ml_models
+Roger2.ml_models
 
-Roger2_small.train()
+Roger2.train()
+
+# !ls ../data/models
 
 # Suponiendo que tienes un modelo entrenado llamado "modelo"
-for i, model in enumerate(Roger2_small.ml_models):
-    dump(model, f'../data/models/roger2_small_{i}.joblib')  
+for i, model in enumerate(Roger2.ml_models):
+    dump(model, f'../data/models/roger2_{i}.joblib')  
 
+
+Roger2.ml_models[0] = load('../data/models/roger2_0.joblib')
 
 # +
 #val_ind = Roger2_small.test_indices
@@ -277,12 +285,101 @@ conf_mat = Roger2.confusion_matrix(real_class, pred_class)
 
 plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True, class_names=labels)
 
-plt.savefig('../graphs/confusionMatrix.pdf')
+#plt.savefig('../graphs/confusionMatrix.pdf')
 # -
 pred_prob = Roger2.predict_prob(data[gal_test_ind, 2:], n_model=0)
 
 
-pred_prob.shape
+# +
+predicted_labels = np.argmax(pred_prob, axis = 1)
+thresholds = np.array([0.2, 0.3, 0.25, 0.15, 0.1])  # Ejemplo de thresholds para 5 clases
+
+aux = pred_prob - thresholds
+
+aux = aux[np.arange(len(predicted_labels)),predicted_labels]
+predicted_labels[np.where(aux > 0)[0]] = predicted_labels[np.where(aux > 0)[0]] + 1
+predicted_labels[np.where(aux < 0)[0]] = -1
+
+ind = np.where(predicted_labels != -1)[0]
+conf_mat = Roger2.confusion_matrix(real_class[ind], predicted_labels[ind])
+conf_mat_norm = conf_mat / np.sum(conf_mat, axis = 1, keepdims=True)
+np.sum((conf_mat_norm - np.identity(5))**2)
+# -
+
+pr = calculate_confusion_matrix(thresholds, pred_prob, real_class)
+
+
+# Función para calcular la matriz de confusión dados los thresholds
+def calculate_confusion_matrix(thresholds, pred_prob, real_class, norm = True):
+    predicted_labels = np.argmax(pred_prob, axis = 1)
+    aux = pred_prob - thresholds
+    
+    aux = aux[np.arange(len(predicted_labels)),predicted_labels]
+    predicted_labels[np.where(aux > 0)[0]] = predicted_labels[np.where(aux > 0)[0]] + 1
+    predicted_labels[np.where(aux < 0)[0]] = -1
+    
+    ind = np.where(predicted_labels != -1)[0]
+    conf_mat = Roger2.confusion_matrix(real_class[ind], predicted_labels[ind])
+    if norm: conf_mat = conf_mat / np.sum(conf_mat, axis = 1, keepdims=True)
+    return conf_mat, predicted_labels
+
+
+# Función de log-verosimilitud (negativo de la función de costo)
+def log_likelihood(theta, pred_prob, real_class):
+    try:
+        thresholds = theta
+        conf_matrix,_ = calculate_confusion_matrix(thresholds, pred_prob, real_class)
+        identity_matrix = np.eye(5)
+        cost = np.linalg.norm(conf_matrix - identity_matrix, ord="fro")  # Norma Frobenius
+    except:
+        cost = -np.inf
+    if len(np.where(theta < 0)[0]) > 0: cost = -np.inf
+    return -cost  # Maximizar el negativo del costo
+
+
+# +
+# Configuración de emcee
+n_walkers = 20  # Número de caminantes
+n_dim = 5  # Número de thresholds (una por clase)
+n_iter = 100  # Número de iteraciones
+
+# Inicialización aleatoria de los thresholds (dentro del rango [0, 1])
+initial_thresholds = np.random.rand(n_walkers, n_dim)
+
+# Crear el sampler de emcee
+sampler = emcee.EnsembleSampler(n_walkers, n_dim, log_likelihood, args=(pred_prob, real_class))
+
+# Ejecutar el MCMC
+sampler.run_mcmc(initial_thresholds, n_iter, progress=True)
+
+# +
+# Extraer los resultados
+samples = sampler.get_chain()  # Cadena de muestras
+best_thresholds = sampler.get_chain(flat=True)[np.argmax(sampler.get_log_prob(flat=True))]  # Mejor combinación
+
+# Resultados
+print("Mejores thresholds encontrados:", best_thresholds)
+
+# +
+import corner
+
+# Obtener las muestras planas (todas las iteraciones y caminantes combinados)
+flat_samples = sampler.get_chain(flat=True)
+
+# Graficar las distribuciones posteriores
+fig = corner.corner(
+    flat_samples,
+    labels=[f"Threshold {i+1}" for i in range(n_dim)],
+    truths=best_thresholds,  # Resaltar los mejores thresholds encontrados
+    show_titles=True,
+)
+# -
+
+conf_mat, pred_labels = calculate_confusion_matrix(best_thresholds, pred_prob, real_class, norm = False)
+
+len(np.where(pred_labels < 0 )[0])
+
+plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True, class_names=labels)
 
 # +
 mean_CL_prob, x_edges, y_edges, _ = binned_statistic_2d(data[gal_test_ind,3], data[gal_test_ind,4], pred_prob[:,0], statistic='mean', bins=20)
