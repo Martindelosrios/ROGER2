@@ -265,16 +265,15 @@ Roger2 = roger.RogerModel(x_dataset = data[gal_train_ind, 2:], y_dataset = data[
 
 Roger2.ml_models
 
-Roger2.train()
+Roger2.train(path_to_saved_model = ['../data/models/roger2_0.joblib','../data/models/roger2_1.joblib'])
 
-# !ls ../data/models
+Roger2.trained
 
-# Suponiendo que tienes un modelo entrenado llamado "modelo"
+Roger2.ml_models[0] = load('../data/models/roger2_0.joblib')
+
 for i, model in enumerate(Roger2.ml_models):
     dump(model, f'../data/models/roger2_{i}.joblib')  
 
-
-Roger2.ml_models[0] = load('../data/models/roger2_0.joblib')
 
 # +
 #val_ind = Roger2_small.test_indices
