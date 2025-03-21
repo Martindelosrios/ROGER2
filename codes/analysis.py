@@ -266,27 +266,26 @@ Roger2 = roger.RogerModel(x_dataset = data[gal_train_ind, 2:], y_dataset = data[
 Roger2.ml_models
 
 Roger2.train(path_to_saved_model = ['../data/models/roger2_0.joblib','../data/models/roger2_1.joblib'])
+# #%Roger2.train(path_to_save = ['../data/models/roger2_0.joblib','../data/models/roger2_1.joblib'])
 
 Roger2.trained
-
-Roger2.ml_models[0] = load('../data/models/roger2_0.joblib')
-
-for i, model in enumerate(Roger2.ml_models):
-    dump(model, f'../data/models/roger2_{i}.joblib')  
-
 
 # +
 #val_ind = Roger2_small.test_indices
 real_class = data[gal_test_ind, 1]
 
 pred_class = Roger2.predict_class(data[gal_test_ind, 2:], n_model=0)
-conf_mat = Roger2.confusion_matrix(real_class, pred_class)
+pred_prob = Roger2.predict_prob(data[gal_test_ind, 2:], n_model=0)
+# +
+conf_mat,_ = Roger2.confusion_matrix(real_class, pred_class)
 
 plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True, class_names=labels)
 
 #plt.savefig('../graphs/confusionMatrix.pdf')
 # -
-pred_prob = Roger2.predict_prob(data[gal_test_ind, 2:], n_model=0)
+cm, pr = Roger2.confusion_matrix(thresholds = np.array([0.5, 0.5, 0.5, 0.5, 0.5]), pred_prob = pred_prob, real_class = real_class)
+
+plot_confusion_matrix(cm, show_absolute=True, show_normed=True, class_names=labels)
 
 
 # +
@@ -303,44 +302,36 @@ ind = np.where(predicted_labels != -1)[0]
 conf_mat = Roger2.confusion_matrix(real_class[ind], predicted_labels[ind])
 conf_mat_norm = conf_mat / np.sum(conf_mat, axis = 1, keepdims=True)
 np.sum((conf_mat_norm - np.identity(5))**2)
+
+
 # -
 
-pr = calculate_confusion_matrix(thresholds, pred_prob, real_class)
-
-
-# Función para calcular la matriz de confusión dados los thresholds
-def calculate_confusion_matrix(thresholds, pred_prob, real_class, norm = True):
-    predicted_labels = np.argmax(pred_prob, axis = 1)
-    aux = pred_prob - thresholds
-    
-    aux = aux[np.arange(len(predicted_labels)),predicted_labels]
-    predicted_labels[np.where(aux > 0)[0]] = predicted_labels[np.where(aux > 0)[0]] + 1
-    predicted_labels[np.where(aux < 0)[0]] = -1
-    
-    ind = np.where(predicted_labels != -1)[0]
-    conf_mat = Roger2.confusion_matrix(real_class[ind], predicted_labels[ind])
-    if norm: conf_mat = conf_mat / np.sum(conf_mat, axis = 1, keepdims=True)
-    return conf_mat, predicted_labels
-
-
 # Función de log-verosimilitud (negativo de la función de costo)
-def log_likelihood(theta, pred_prob, real_class):
+def log_likelihood(theta, pred_prob, real_class, 
+                   conditions = [lambda theta, pred_class, real_class: len(np.where(theta < 0)[0]) > 0,  # If some threshold is lower than 0
+                                 lambda theta, pred_class, real_class: len(np.where(theta > 1)[0]) > 0,  # If some threshold is bigger than 1
+                                 lambda theta, pred_class, real_class: (len(np.where(pred_class < 0 )[0]) / len(real_class)) > 0.5  # If we lose half of the galaxies
+                                ]):
     try:
         thresholds = theta
-        conf_matrix,_ = calculate_confusion_matrix(thresholds, pred_prob, real_class)
+        conf_matrix, pred_labels = Roger2.confusion_matrix(thresholds = theta, pred_prob = pred_prob, real_class = real_class)
         identity_matrix = np.eye(5)
         cost = np.linalg.norm(conf_matrix - identity_matrix, ord="fro")  # Norma Frobenius
     except:
-        cost = -np.inf
-    if len(np.where(theta < 0)[0]) > 0: cost = -np.inf
+        cost = np.inf
+    for i in conditions:
+        if i(theta, pred_labels, real_class): cost = np.inf
+            
     return -cost  # Maximizar el negativo del costo
 
+
+log_likelihood(best_thresholds , pred_prob, real_class)
 
 # +
 # Configuración de emcee
 n_walkers = 20  # Número de caminantes
 n_dim = 5  # Número de thresholds (una por clase)
-n_iter = 100  # Número de iteraciones
+n_iter = 20  # Número de iteraciones
 
 # Inicialización aleatoria de los thresholds (dentro del rango [0, 1])
 initial_thresholds = np.random.rand(n_walkers, n_dim)
@@ -374,11 +365,29 @@ fig = corner.corner(
 )
 # -
 
-conf_mat, pred_labels = calculate_confusion_matrix(best_thresholds, pred_prob, real_class, norm = False)
+conf_mat, pred_labels = Roger2.confusion_matrix(thresholds = best_thresholds, pred_prob = pred_prob, real_class = real_class, norm = False)
 
-len(np.where(pred_labels < 0 )[0])
+len(np.where(pred_labels < 0 )[0]) / len(real_class)
 
 plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True, class_names=labels)
+
+# +
+cmaps = ['Reds', 'Oranges', 'Greens', 'Blues', 'Greys']
+colors = ['red', 'orange', 'green', 'blue', 'grey']
+
+fig,ax = plt.subplots(1,1, sharex = True, sharey = True, figsize = (4,4))
+
+for i in range(5):
+    aux = data[gal_test_ind[np.where(pred_labels == (i+1))[0]], 2:] 
+    ind = np.random.choice(np.arange(len(aux)), replace = False, size = 1000)
+    sns.kdeplot(x=aux[ind, 1], y=aux[ind, 2], fill=True, alpha = 0.7, cmap=cmaps[i], levels=3, ax = ax, zorder = 4)
+    sns.kdeplot(x=aux[ind, 1], y=aux[ind, 2], fill=False, alpha = 0.7, color=colors[i], levels=3, ax = ax, zorder = 4, linestyles=['--', '-', 'solid'])
+
+
+ax.set_xlabel('$r / R_{200}$', fontsize = 12)
+ax.set_ylabel('$v / \sigma$', fontsize = 12)
+ax.set_xlim(0,3)
+ax.set_ylim(0,3)
 
 # +
 mean_CL_prob, x_edges, y_edges, _ = binned_statistic_2d(data[gal_test_ind,3], data[gal_test_ind,4], pred_prob[:,0], statistic='mean', bins=20)
@@ -441,7 +450,7 @@ ax[4].set_title('<$P_{ITL}$>')
 
 ax[0].set_xlim(0,3)
 ax[0].set_ylim(0,3)
-plt.savefig('PredProbabilities.pdf')
+#plt.savefig('PredProbabilities.pdf')
 # -
 # ## Analysis per mass bin
 
@@ -499,3 +508,18 @@ for i in range(4):
     plt.clf()
 
 
+# # Deprecated
+
+# Función para calcular la matriz de confusión dados los thresholds
+def calculate_confusion_matrix(thresholds, pred_prob, real_class, norm = True):
+    predicted_labels = np.argmax(pred_prob, axis = 1)
+    aux = pred_prob - thresholds
+    
+    aux = aux[np.arange(len(predicted_labels)),predicted_labels]
+    predicted_labels[np.where(aux > 0)[0]] = predicted_labels[np.where(aux > 0)[0]] + 1
+    predicted_labels[np.where(aux < 0)[0]] = -1
+    
+    ind = np.where(predicted_labels != -1)[0]
+    conf_mat = Roger2.confusion_matrix(real_class[ind], predicted_labels[ind])
+    if norm: conf_mat = conf_mat / np.sum(conf_mat, axis = 1, keepdims=True)
+    return conf_mat, predicted_labels
