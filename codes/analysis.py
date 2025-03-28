@@ -241,8 +241,8 @@ nclusters = len(cl_ind)
 print('There are ' + str(nclusters) + ' clusters')
 
 # +
-ntrain = int(0.7 * nclusters)
-ntest = nclusters - ntrain
+ntrain = int(0.1 * nclusters)
+ntest = ntrain#nclusters - ntrain
 
 np.random.seed(91218)
 random_ind = np.random.choice(cl_ind, replace = False, size = nclusters)
@@ -254,9 +254,13 @@ cl_test_ind = random_ind[ntrain:]
 gal_train_ind = np.where(np.isin(data[:,0], cl_train_ind) == True)[0]
 gal_test_ind = np.where(np.isin(data[:,0], cl_test_ind) == True)[0]
 
+gal_test_ind = np.random.choice(gal_test_ind, size = 1000)
+
 len(gal_train_ind)
 
 len(gal_test_ind)
+
+np.savetxt('../../test_data.dat', data[gal_test_ind])
 
 # +
 comments = """ 
@@ -270,13 +274,12 @@ Roger2 = roger.RogerModel(x_dataset = data[gal_train_ind, 2:], y_dataset = data[
 
 Roger2.ml_models
 
-#Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
-Roger2.train(path_to_save = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
+Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN_tiny.joblib','../data/models/roger2_RF_tiny.joblib'])
+#Roger2.train(path_to_save = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
 
 Roger2.trained
 
 # +
-#val_ind = Roger2_small.test_indices
 real_class = data[gal_test_ind, 1]
 
 pred_class = Roger2.predict_class(data[gal_test_ind, 2:], n_model=0)
@@ -311,7 +314,7 @@ conf_mat,_ = Roger2.confusion_matrix(real_class, pred_class)
 
 plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True, class_names=labels)
 
-plt.savefig('../graphs/confusionMatrix_ROGER2_KNN.pdf')
+#plt.savefig('../graphs/confusionMatrix_ROGER2_KNN.pdf')
 # +
 cmaps = ['Reds', 'Oranges', 'Greens', 'Blues', 'Greys']
 colors = ['red', 'orange', 'green', 'blue', 'grey']
@@ -500,6 +503,10 @@ combinaciones[np.asarray(results).argmax()]
 
 comb = combinaciones[np.asarray(results).argmax()]
 log_likelihood(np.array([comb[0],comb[1],comb[2],comb[3],comb[4]]) , pred_prob, real_class)
+
+conf_mat, pred_labels = Roger2.confusion_matrix(thresholds = np.asarray(comb), pred_prob = pred_prob, real_class = real_class, norm = False)
+
+plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True, class_names=labels)
 
 # ## Analysis per mass bin
 
