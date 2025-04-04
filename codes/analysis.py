@@ -67,10 +67,59 @@ print('Hay ' + str(len(rin)) + ' recent infalling galaxies')
 print('Hay ' + str(len(bs)) + ' backsplash galaxies')
 print('Hay ' + str(len(inf)) + ' infalling galaxies')
 print('Hay ' + str(len(itl)) + ' interlooper galaxies')
+
+# +
+aux_TNG = np.loadtxt(DATA_PATH + 'data_tng300.dat', skiprows = 1)
+# aux_TNG[:,0] = nro de cumulo
+# aux_TNG[:,1] =  clasificacion real de la galaxia (CL = 0, RIN = 1, BS =2, IN = 3, ITL = 4)
+# aux_TNG[:,2] = rp/R200
+# aux_TNG[:,3] = |Delta V|/sigma
+# aux_TNG[:,4] = log masa del cumulo
+
+ind = np.where((aux_TNG[:,2] < 3) &
+               (aux_TNG[:,3] < 3) )[0]
+
+aux_TNG = aux_TNG[ind]
+
+data_TNG = np.copy(aux_TNG)
+
+data_TNG[:,2] = aux_TNG[:,4] 
+data_TNG[:,3] = aux_TNG[:,2] 
+data_TNG[:,4] = aux_TNG[:,3] 
+
+ind = np.where(aux_TNG[:,1] == 2)
+data_TNG[ind,1] = 1
+
+ind = np.where(aux_TNG[:,1] == 1)
+data_TNG[ind,1] = 2
+
+data_TNG[:,1] = data_TNG[:,1] + 1 
+
+# data_TNG[:,0] = nro de cumulo
+# data_TNG[:,1] =  clasificacion real de la galaxia (CL = 1, BS = 2, RIN = 3, IN = 4, ITL = 5)
+# data_TNG[:,2] = log masa del cumulo
+# data_TNG[:,3] = rp/R200
+# data_TNG[:,4] = |Delta V|/sigma
 # -
 
-data_TNG = np.loadtxt(DATA_PATH + 'data_tng300.dat', skiprows = 1)
 
+np.max(aux_TNG, axis = 0)
+
+data_TNG.shape
+
+# +
+cl_TNG  = data_TNG[np.where(data_TNG[:,1] == 1)[0]]
+bs_TNG  = data_TNG[np.where(data_TNG[:,1] == 2)[0]]
+rin_TNG = data_TNG[np.where(data_TNG[:,1] == 3)[0]]
+inf_TNG = data_TNG[np.where(data_TNG[:,1] == 4)[0]]
+itl_TNG = data_TNG[np.where(data_TNG[:,1] == 5)[0]]
+
+print('Hay ' + str(len(cl_TNG)) + ' cluster galaxies')
+print('Hay ' + str(len(rin_TNG)) + ' recent infalling galaxies')
+print('Hay ' + str(len(bs_TNG)) + ' backsplash galaxies')
+print('Hay ' + str(len(inf_TNG)) + ' infalling galaxies')
+print('Hay ' + str(len(itl_TNG)) + ' interlooper galaxies')
+# -
 
 # ## Plots
 
@@ -120,25 +169,47 @@ ax.set_xlabel('$r / R_{200}$', fontsize = 12)
 ax.set_ylabel('$v / \sigma$', fontsize = 12)
 ax.set_xlim(0,3)
 ax.set_ylim(0,3)
-plt.savefig('../graphs/R_V_distros.pdf')
+#plt.savefig('../graphs/R_V_distros.pdf')
+
+# +
+cmaps = ['Reds', 'Oranges', 'Greens', 'Blues', 'Greys'] 
+colors = ['red', 'orange', 'green', 'blue', 'grey'] 
+
+fig,ax = plt.subplots(1,1, sharex = True, sharey = True, figsize = (4,4))
+
+for i, dat in enumerate([cl_TNG, bs_TNG, rin_TNG, inf_TNG, itl_TNG]):
+    ind = np.random.choice(np.arange(len(dat)), replace = False, size = 1000)
+    sns.kdeplot(x=dat[ind, 3], y=dat[ind, 4], fill=True, alpha = 0.7, cmap=cmaps[i], levels=3, ax = ax, zorder = 4)
+    sns.kdeplot(x=dat[ind, 3], y=dat[ind, 4], fill=False, alpha = 0.7, color=colors[i], levels=3, ax = ax, zorder = 4, linestyles=['--', '-', 'solid'])
+
+ax.set_xlabel('$r / R_{200}$', fontsize = 12)
+ax.set_ylabel('$v / \sigma$', fontsize = 12)
+ax.set_xlim(0,3)
+ax.set_ylim(0,3)
+plt.savefig('../graphs/R_V_distros_TNG.pdf')
 
 # +
 fig,ax = plt.subplots(1,5, sharex = True, sharey = True, figsize = (14,3))
 
 ind = np.random.choice(np.arange(len(cl)), replace = False, size = 1000)
 sns.kdeplot(x=cl[ind, 3], y=cl[ind, 4], fill=True, cmap="Reds", levels=5, ax = ax[0])
+sns.kdeplot(x=cl_TNG[:, 3], y=cl_TNG[:, 4], fill=False, cmap="Reds", levels=5, ax = ax[0])
 
 ind = np.random.choice(np.arange(len(bs)), replace = False, size = 1000)
 sns.kdeplot(x=bs[ind, 3], y=bs[ind, 4], fill=True, cmap="Oranges", levels=5, ax = ax[1])
+sns.kdeplot(x=bs_TNG[:, 3], y=bs_TNG[:, 4], fill=False, cmap="Oranges", levels=5, ax = ax[1])
 
 ind = np.random.choice(np.arange(len(rin)), replace = False, size = 1000)
 sns.kdeplot(x=rin[ind, 3], y=rin[ind, 4], fill=True, cmap="Greens", levels=5, ax = ax[2])
+sns.kdeplot(x=rin_TNG[:, 3], y=rin_TNG[:, 4], fill=False, cmap="Greens", levels=5, ax = ax[2])
 
 ind = np.random.choice(np.arange(len(inf)), replace = False, size = 1000)
 sns.kdeplot(x=inf[ind, 3], y=inf[ind, 4], fill=True, cmap="Blues", levels=5, ax = ax[3])
+sns.kdeplot(x=inf_TNG[:, 3], y=inf_TNG[:, 4], fill=False, cmap="Blues", levels=5, ax = ax[3])
 
 ind = np.random.choice(np.arange(len(itl)), replace = False, size = 1000)
 sns.kdeplot(x=itl[ind, 3], y=itl[ind, 4], fill=True, cmap="Greys", levels=5, ax = ax[4])
+sns.kdeplot(x=itl_TNG[:, 3], y=itl_TNG[:, 4], fill=False, cmap="Greys", levels=5, ax = ax[4])
 
 ax[0].set_xlabel('$r / R_{200}$', fontsize = 12)
 ax[1].set_xlabel('$r / R_{200}$', fontsize = 12)
@@ -146,6 +217,8 @@ ax[2].set_xlabel('$r / R_{200}$', fontsize = 12)
 ax[3].set_xlabel('$r / R_{200}$', fontsize = 12)
 ax[4].set_xlabel('$r / R_{200}$', fontsize = 12)
 ax[0].set_ylabel('$v / \sigma$', fontsize = 12)
+
+plt.savefig('../graphs/R_V_distros_comparison.pdf')
 # -
 
 plt.hist(data[:,2])
@@ -203,22 +276,27 @@ for i in range(4):
     ind = np.where(cl_bins ==  (i+1))[0]
     if len(ind) > 1000: ind = np.random.choice(ind, replace = False, size = 1000)
     sns.kdeplot(x=cl[ind, 3], y=cl[ind, 4], fill=True, cmap="Reds", levels=5, ax = ax[i,0])
+    sns.kdeplot(x=cl_TNG[:, 3], y=cl_TNG[:, 4], fill=False, cmap="Reds", levels=5, ax = ax[i,0])
     
     ind = np.where(bs_bins ==  (i+1))[0]
     if len(ind) > 1000: ind = np.random.choice(ind, replace = False, size = 1000)
     sns.kdeplot(x=bs[ind, 3], y=bs[ind, 4], fill=True, cmap="Oranges", levels=5, ax = ax[i,1])
+    sns.kdeplot(x=bs_TNG[:, 3], y=bs_TNG[:, 4], fill=False, cmap="Oranges", levels=5, ax = ax[i,1])
     
     ind = np.where(rin_bins ==  (i+1))[0]
     if len(ind) > 1000: ind = np.random.choice(ind, replace = False, size = 1000)
     sns.kdeplot(x=rin[ind, 3], y=rin[ind, 4], fill=True, cmap="Greens", levels=5, ax = ax[i,2])
+    sns.kdeplot(x=rin_TNG[:, 3], y=rin_TNG[:, 4], fill=False, cmap="Greens", levels=5, ax = ax[i,2])
     
     ind = np.where(inf_bins ==  (i+1))[0]
     if len(ind) > 1000: ind = np.random.choice(ind, replace = False, size = 1000)
     sns.kdeplot(x=inf[ind, 3], y=inf[ind, 4], fill=True, cmap="Blues", levels=5, ax = ax[i,3])
+    sns.kdeplot(x=inf_TNG[:, 3], y=inf_TNG[:, 4], fill=False, cmap="Blues", levels=5, ax = ax[i,3])
     
     ind = np.where(itl_bins ==  (i+1))[0]
     if len(ind) > 1000: ind = np.random.choice(ind, replace = False, size = 1000)
     sns.kdeplot(x=itl[ind, 3], y=itl[ind, 4], fill=True, cmap="Greys", levels=5, ax = ax[i,4])
+    sns.kdeplot(x=itl_TNG[:, 3], y=itl_TNG[:, 4], fill=False, cmap="Greys", levels=5, ax = ax[i,4])
 
     ax[i,0].text(0.1,0.8, '{:.2f} < M < {:.2f}'.format(mass_bins[i],mass_bins[i+1]), transform = ax[i,0].transAxes)
 ax[3,0].set_xlabel('$r / R_{200}$', fontsize = 12)
@@ -241,7 +319,7 @@ nclusters = len(cl_ind)
 print('There are ' + str(nclusters) + ' clusters')
 
 # +
-ntrain = int(0.1 * nclusters)
+ntrain = int(0.8 * nclusters)
 ntest = ntrain#nclusters - ntrain
 
 np.random.seed(91218)
@@ -285,6 +363,12 @@ real_class = data[gal_test_ind, 1]
 pred_class = Roger2.predict_class(data[gal_test_ind, 2:], n_model=0)
 pred_prob = Roger2.predict_prob(data[gal_test_ind, 2:], n_model=0)
 # +
+real_class_TNG = data_TNG[:, 1]
+
+pred_class_TNG = Roger2.predict_class(data_TNG[:, 2:], n_model=0)
+pred_prob_TNG = Roger2.predict_prob(data_TNG[:, 2:], n_model=0)
+
+# +
 readme = '''
          Data set used for testing ROGER2. Results corresponding to KNN method.
 
@@ -303,9 +387,9 @@ readme = '''
          P_in: Probability of being an infalling galaxy.
          P_itl: Probability of being a iterloper galaxy.
          '''
-np.savetxt('../data/ROGER2_KNN_probabilities_testset.txt',  np.hstack((gal_test_ind.reshape(len(gal_test_ind),1), data[gal_test_ind], pred_prob)),
-          header = 'ID_gal ID_cl class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
-          comments = readme)
+# #%np.savetxt('../data/ROGER2_KNN_probabilities_testset.txt',  np.hstack((gal_test_ind.reshape(len(gal_test_ind),1), data[gal_test_ind], pred_prob)),
+#%          header = 'ID_gal ID_cl class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
+#%          comments = readme)
 
 pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
 
@@ -315,6 +399,13 @@ conf_mat,_ = Roger2.confusion_matrix(real_class, pred_class)
 plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True, class_names=labels)
 
 #plt.savefig('../graphs/confusionMatrix_ROGER2_KNN.pdf')
+# +
+conf_mat_TNG,_ = Roger2.confusion_matrix(real_class_TNG, pred_class_TNG)
+
+plot_confusion_matrix(conf_mat_TNG, show_absolute=True, show_normed=True, class_names=labels)
+
+plt.savefig('../graphs/confusionMatrix_TNG_ROGER2_KNN.pdf')
+
 # +
 cmaps = ['Reds', 'Oranges', 'Greens', 'Blues', 'Greys']
 colors = ['red', 'orange', 'green', 'blue', 'grey']
