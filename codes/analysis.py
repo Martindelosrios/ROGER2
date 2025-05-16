@@ -186,7 +186,7 @@ ax.set_xlabel('$r / R_{200}$', fontsize = 12)
 ax.set_ylabel('$v / \sigma$', fontsize = 12)
 ax.set_xlim(0,3)
 ax.set_ylim(0,3)
-plt.savefig('../graphs/R_V_distros_TNG.pdf')
+#plt.savefig('../graphs/R_V_distros_TNG.pdf')
 
 # +
 fig,ax = plt.subplots(1,5, sharex = True, sharey = True, figsize = (14,3))
@@ -218,7 +218,7 @@ ax[3].set_xlabel('$r / R_{200}$', fontsize = 12)
 ax[4].set_xlabel('$r / R_{200}$', fontsize = 12)
 ax[0].set_ylabel('$v / \sigma$', fontsize = 12)
 
-plt.savefig('../graphs/R_V_distros_comparison.pdf')
+#plt.savefig('../graphs/R_V_distros_comparison.pdf')
 # -
 
 plt.hist(data[:,2])
@@ -259,9 +259,6 @@ ax[4,0].set_ylabel('$v / \sigma$', fontsize = 12)
 # -
 
 mass_bins
-
-i = 4
-'{:.2f} < M < {:.2f}'.format(mass_bins[i],mass_bins[i+1])
 
 # +
 cl_bins  = np.digitize(cl[:,2], mass_bins)
@@ -309,7 +306,7 @@ ax[3,0].set_ylabel('$v / \sigma$', fontsize = 12)
 ax[3,0].set_xlim(0,3)
 ax[3,0].set_ylim(0,3)
 
-plt.savefig('../graphs/R_V_distros_massbins.pdf')
+#plt.savefig('../graphs/R_V_distros_massbins.pdf')
 # -
 
 # # Analysis
@@ -352,8 +349,10 @@ Roger2 = roger.RogerModel(x_dataset = data[gal_train_ind, 2:], y_dataset = data[
 
 Roger2.ml_models
 
-Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN_tiny.joblib','../data/models/roger2_RF_tiny.joblib'])
-#Roger2.train(path_to_save = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
+# !ls ../data/models
+
+#Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN_tiny.joblib','../data/models/roger2_RF_tiny.joblib'])
+Roger2.train(path_to_save = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
 
 Roger2.trained
 
@@ -391,7 +390,31 @@ readme = '''
 #%          header = 'ID_gal ID_cl class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
 #%          comments = readme)
 
-pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
+#pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
+
+# +
+readme = '''
+         TNG Data set used for testing ROGER2. Results corresponding to KNN method.
+
+         Columns:
+         -------
+         
+         ID_cl: Cluster ID.
+         class: Real class.
+         LogM: Log10 of the cluster mass.
+         R/R200: Galaxy radial distance to the cluster center, normalized to R200.
+         V/sigma: Galaxy relative velocity to cluster center normalized to cluster velocity dispersion.
+         P_cl: Probability of being a cluster galaxy.
+         P_bs: Probability of being a backsplash galaxy.
+         P_rin: Probability of being a recent infaller galaxy.
+         P_in: Probability of being an infalling galaxy.
+         P_itl: Probability of being a iterloper galaxy.
+         '''
+
+np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG.txt', np.hstack((data_TNG, pred_prob_TNG)),
+          header = 'ID_cl class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
+          comments = readme)
+pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG.txt', skiprows = 17)
 
 # +
 conf_mat,_ = Roger2.confusion_matrix(real_class, pred_class)
