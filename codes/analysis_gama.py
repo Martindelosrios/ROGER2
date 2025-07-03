@@ -91,6 +91,7 @@ data_aux = np.loadtxt(DATA_PATH + 'gal_gama.dat')
 # data_aux[:,0] = rp/R200
 # data_aux[:,1] = |Delta V|/sigma
 # data_aux[:,2] = log masa del cumulo
+# data_aux[:,3] = id
 
 # +
 data = np.copy(data_aux)
@@ -108,8 +109,8 @@ Roger2.ml_models
 
 Roger2.trained
 
-pred_class = Roger2.predict_class(data, n_model=0)
-pred_prob = Roger2.predict_prob(data, n_model=0)
+pred_class = Roger2.predict_class(data[:,:-1], n_model=0)
+pred_prob = Roger2.predict_prob(data[:,:-1], n_model=0)
 # +
 readme = '''
          Data set used for testing ROGER2. Results corresponding to KNN method.
@@ -119,6 +120,7 @@ readme = '''
          LogM: Log10 of the cluster mass.
          R/R200: Galaxy radial distance to the cluster center, normalized to R200.
          V/sigma: Galaxy relative velocity to cluster center normalized to cluster velocity dispersion.
+         ID: Galaxy ID.
          Pred_class: Predicted class with max probability.
          P_cl: Probability of being a cluster galaxy.
          P_bs: Probability of being a backsplash galaxy.
@@ -127,22 +129,7 @@ readme = '''
          P_itl: Probability of being a iterloper galaxy.
          '''
 np.savetxt('../data/ROGER2_KNN_probabilities_gama.txt',  np.hstack((data, pred_class.reshape(len(pred_class), 1), pred_prob)),
-          header = 'LogM R/R200 V/sigma Pred_class P_cl P_bs P_rin P_in P_itl',
+          header = 'LogM R/R200 V/sigma ID Pred_class P_cl P_bs P_rin P_in P_itl',
           comments = readme)
 
 #pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
-# -
-
-# Función para calcular la matriz de confusión dados los thresholds
-def calculate_confusion_matrix(thresholds, pred_prob, real_class, norm = True):
-    predicted_labels = np.argmax(pred_prob, axis = 1)
-    aux = pred_prob - thresholds
-    
-    aux = aux[np.arange(len(predicted_labels)),predicted_labels]
-    predicted_labels[np.where(aux > 0)[0]] = predicted_labels[np.where(aux > 0)[0]] + 1
-    predicted_labels[np.where(aux < 0)[0]] = -1
-    
-    ind = np.where(predicted_labels != -1)[0]
-    conf_mat = Roger2.confusion_matrix(real_class[ind], predicted_labels[ind])
-    if norm: conf_mat = conf_mat / np.sum(conf_mat, axis = 1, keepdims=True)
-    return conf_mat, predicted_labels
