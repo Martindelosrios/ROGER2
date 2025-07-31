@@ -71,6 +71,10 @@ gal_train_ind = np.where(np.isin(data_train[:,0], cl_train_ind) == True)[0]
 gal_test_ind = np.where(np.isin(data_train[:,0], cl_test_ind) == True)[0]
 
 gal_test_ind = np.random.choice(gal_test_ind, size = 1000)
+# -
+
+print(np.min(data_train[gal_train_ind, 2:], axis = 0))
+print(np.max(data_train[gal_train_ind, 2:], axis = 0))
 
 # +
 comments = """ 
@@ -86,7 +90,7 @@ Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN_tiny.joblib','../
 
 # +
 # gama data
-data_aux = np.loadtxt(DATA_PATH + 'gal_gama.dat')
+data_aux = np.loadtxt(DATA_PATH + 'gal_gama_25_07.dat')
 
 # data_aux[:,0] = rp/R200
 # data_aux[:,1] = |Delta V|/sigma
@@ -102,6 +106,9 @@ data[:,2] = data_aux[:,1]
 # -
 
 data.shape
+
+print(np.min(data[:,:-1], axis = 0))
+print(np.max(data[:,:-1], axis = 0))
 
 # # Analysis
 
@@ -128,8 +135,11 @@ readme = '''
          P_in: Probability of being an infalling galaxy.
          P_itl: Probability of being a iterloper galaxy.
          '''
-np.savetxt('../data/ROGER2_KNN_probabilities_gama.txt',  np.hstack((data, pred_class.reshape(len(pred_class), 1), pred_prob)),
+np.savetxt('../data/ROGER2_KNN_probabilities_gama_v2.txt',  np.hstack((data, pred_class.reshape(len(pred_class), 1), pred_prob)),
           header = 'LogM R/R200 V/sigma ID Pred_class P_cl P_bs P_rin P_in P_itl',
           comments = readme)
 
 #pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
+# -
+
+
