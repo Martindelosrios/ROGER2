@@ -76,10 +76,10 @@ aux_TNG = np.loadtxt(DATA_PATH + 'data_tng300.dat', skiprows = 1)
 # aux_TNG[:,3] = |Delta V|/sigma
 # aux_TNG[:,4] = log masa del cumulo
 
-ind = np.where((aux_TNG[:,2] < 3) &
-               (aux_TNG[:,3] < 3) )[0]
+#ind = np.where((aux_TNG[:,2] < 3) &
+#               (aux_TNG[:,3] < 3) )[0]
 
-aux_TNG = aux_TNG[ind]
+#aux_TNG = aux_TNG[ind]
 
 data_TNG = np.copy(aux_TNG)
 
@@ -351,8 +351,8 @@ Roger2.ml_models
 
 # !ls ../data/models
 
-#Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN_tiny.joblib','../data/models/roger2_RF_tiny.joblib'])
-Roger2.train(path_to_save = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
+Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
+#Roger2.train(path_to_save = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
 
 Roger2.trained
 
@@ -411,10 +411,11 @@ readme = '''
          P_itl: Probability of being a iterloper galaxy.
          '''
 
-np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG.txt', np.hstack((data_TNG, pred_prob_TNG)),
+np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_v2.txt', np.hstack((data_TNG, pred_prob_TNG)),
           header = 'ID_cl class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
           comments = readme)
 pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG.txt', skiprows = 17)
+pr2 = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_v2.txt', skiprows = 17)
 
 # +
 conf_mat,_ = Roger2.confusion_matrix(real_class, pred_class)
