@@ -67,9 +67,15 @@ print('Hay ' + str(len(rin)) + ' recent infalling galaxies')
 print('Hay ' + str(len(bs)) + ' backsplash galaxies')
 print('Hay ' + str(len(inf)) + ' infalling galaxies')
 print('Hay ' + str(len(itl)) + ' interlooper galaxies')
+# -
+
+aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_clean.dat', sep="\t")
+aux_TNG = np.asarray(aux_TNG)[:,:5]
+
+np.max(aux_TNG[:,1])
 
 # +
-aux_TNG = np.loadtxt(DATA_PATH + 'data_tng300.dat', skiprows = 1)
+#aux_TNG = np.loadtxt(DATA_PATH + 'data_tng300_clean.dat', skiprows = 1)
 # aux_TNG[:,0] = nro de cumulo
 # aux_TNG[:,1] =  clasificacion real de la galaxia (CL = 0, RIN = 1, BS =2, IN = 3, ITL = 4)
 # aux_TNG[:,2] = rp/R200
@@ -81,15 +87,21 @@ aux_TNG = np.loadtxt(DATA_PATH + 'data_tng300.dat', skiprows = 1)
 
 #aux_TNG = aux_TNG[ind]
 
+aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_clean.dat', sep="\t")
+aux_TNG = np.asarray(aux_TNG)[:,:5]
+
 data_TNG = np.copy(aux_TNG)
 
+# Put the correct order needed for pyroger
 data_TNG[:,2] = aux_TNG[:,4] 
 data_TNG[:,3] = aux_TNG[:,2] 
 data_TNG[:,4] = aux_TNG[:,3] 
 
+# change class beacuse in pyroger class=2 is blacksplash
 ind = np.where(aux_TNG[:,1] == 2)
 data_TNG[ind,1] = 1
 
+# change class beacuse in pyroger class=1 is cluster
 ind = np.where(aux_TNG[:,1] == 1)
 data_TNG[ind,1] = 2
 
@@ -103,7 +115,7 @@ data_TNG[:,1] = data_TNG[:,1] + 1
 # -
 
 
-np.max(aux_TNG, axis = 0)
+np.max(data_TNG, axis = 0)
 
 data_TNG.shape
 
@@ -411,11 +423,12 @@ readme = '''
          P_itl: Probability of being a iterloper galaxy.
          '''
 
-np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_v2.txt', np.hstack((data_TNG, pred_prob_TNG)),
+np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_clean.txt', np.hstack((data_TNG, pred_prob_TNG)),
           header = 'ID_cl class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
           comments = readme)
 pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG.txt', skiprows = 17)
 pr2 = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_v2.txt', skiprows = 17)
+prclean = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_clean.txt', skiprows = 17)
 
 # +
 conf_mat,_ = Roger2.confusion_matrix(real_class, pred_class)
