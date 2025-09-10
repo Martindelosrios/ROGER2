@@ -69,10 +69,12 @@ print('Hay ' + str(len(inf)) + ' infalling galaxies')
 print('Hay ' + str(len(itl)) + ' interlooper galaxies')
 # -
 
-aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_clean.dat', sep="\t")
-aux_TNG = np.asarray(aux_TNG)[:,:5]
-
 np.max(aux_TNG[:,1])
+
+aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_10_09_25.dat', sep="\t")
+
+
+aux_TNG
 
 # +
 #aux_TNG = np.loadtxt(DATA_PATH + 'data_tng300_clean.dat', skiprows = 1)
@@ -87,44 +89,52 @@ np.max(aux_TNG[:,1])
 
 #aux_TNG = aux_TNG[ind]
 
-aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_clean.dat', sep="\t")
-aux_TNG = np.asarray(aux_TNG)[:,:5]
+#aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_clean.dat', sep="\t")
+#aux_TNG = np.asarray(aux_TNG)[:,:5]
+
+
+aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_10_09_25.dat', sep="\t")
+aux_TNG = np.asarray(aux_TNG)
 
 data_TNG = np.copy(aux_TNG)
 
 # Put the correct order needed for pyroger
-data_TNG[:,2] = aux_TNG[:,4] 
-data_TNG[:,3] = aux_TNG[:,2] 
-data_TNG[:,4] = aux_TNG[:,3] 
+data_TNG[:,2] = aux_TNG[:,3] # [:,2] need to be the class
+data_TNG[:,3] = aux_TNG[:,2] # [:,3] need to be log mass
+data_TNG[:,4] = aux_TNG[:,4] # [:,4] need to be r/r200
+data_TNG[:,5] = aux_TNG[:,5] # [:,5] need to be v/sigma
 
 # change class beacuse in pyroger class=2 is blacksplash
-ind = np.where(aux_TNG[:,1] == 2)
-data_TNG[ind,1] = 1
+#ind = np.where(aux_TNG[:,3] == 2)
+#data_TNG[ind,2] = 1
 
 # change class beacuse in pyroger class=1 is cluster
-ind = np.where(aux_TNG[:,1] == 1)
-data_TNG[ind,1] = 2
+#ind = np.where(aux_TNG[:,3] == 1)
+#data_TNG[ind,2] = 2
 
-data_TNG[:,1] = data_TNG[:,1] + 1 
+data_TNG[:,3] = data_TNG[:,3]
 
-# data_TNG[:,0] = nro de cumulo
-# data_TNG[:,1] =  clasificacion real de la galaxia (CL = 1, BS = 2, RIN = 3, IN = 4, ITL = 5)
-# data_TNG[:,2] = log masa del cumulo
-# data_TNG[:,3] = rp/R200
-# data_TNG[:,4] = |Delta V|/sigma
+# data_TNG[:,0] =  halo ID
+# data_TNG[:,1] =  subhalo ID
+# data_TNG[:,2] =  clasificacion real de la galaxia (CL = 1, BS = 2, RIN = 3, IN = 4, ITL = 5)
+# data_TNG[:,3] = log masa del cumulo
+# data_TNG[:,4] = rp/R200
+# data_TNG[:,5] = |Delta V|/sigma
 # -
 
 
 np.max(data_TNG, axis = 0)
 
+np.min(data_TNG, axis = 0)
+
 data_TNG.shape
 
 # +
-cl_TNG  = data_TNG[np.where(data_TNG[:,1] == 1)[0]]
-bs_TNG  = data_TNG[np.where(data_TNG[:,1] == 2)[0]]
-rin_TNG = data_TNG[np.where(data_TNG[:,1] == 3)[0]]
-inf_TNG = data_TNG[np.where(data_TNG[:,1] == 4)[0]]
-itl_TNG = data_TNG[np.where(data_TNG[:,1] == 5)[0]]
+cl_TNG  = data_TNG[np.where(data_TNG[:,2] == 1)[0]]
+bs_TNG  = data_TNG[np.where(data_TNG[:,2] == 2)[0]]
+rin_TNG = data_TNG[np.where(data_TNG[:,2] == 3)[0]]
+inf_TNG = data_TNG[np.where(data_TNG[:,2] == 4)[0]]
+itl_TNG = data_TNG[np.where(data_TNG[:,2] == 5)[0]]
 
 print('Hay ' + str(len(cl_TNG)) + ' cluster galaxies')
 print('Hay ' + str(len(rin_TNG)) + ' recent infalling galaxies')
@@ -191,8 +201,8 @@ fig,ax = plt.subplots(1,1, sharex = True, sharey = True, figsize = (4,4))
 
 for i, dat in enumerate([cl_TNG, bs_TNG, rin_TNG, inf_TNG, itl_TNG]):
     ind = np.random.choice(np.arange(len(dat)), replace = False, size = 1000)
-    sns.kdeplot(x=dat[ind, 3], y=dat[ind, 4], fill=True, alpha = 0.7, cmap=cmaps[i], levels=3, ax = ax, zorder = 4)
-    sns.kdeplot(x=dat[ind, 3], y=dat[ind, 4], fill=False, alpha = 0.7, color=colors[i], levels=3, ax = ax, zorder = 4, linestyles=['--', '-', 'solid'])
+    sns.kdeplot(x=dat[ind, 4], y=dat[ind, 5], fill=True, alpha = 0.7, cmap=cmaps[i], levels=3, ax = ax, zorder = 4)
+    sns.kdeplot(x=dat[ind, 4], y=dat[ind, 5], fill=False, alpha = 0.7, color=colors[i], levels=3, ax = ax, zorder = 4, linestyles=['--', '-', 'solid'])
 
 ax.set_xlabel('$r / R_{200}$', fontsize = 12)
 ax.set_ylabel('$v / \sigma$', fontsize = 12)
@@ -205,23 +215,23 @@ fig,ax = plt.subplots(1,5, sharex = True, sharey = True, figsize = (14,3))
 
 ind = np.random.choice(np.arange(len(cl)), replace = False, size = 1000)
 sns.kdeplot(x=cl[ind, 3], y=cl[ind, 4], fill=True, cmap="Reds", levels=5, ax = ax[0])
-sns.kdeplot(x=cl_TNG[:, 3], y=cl_TNG[:, 4], fill=False, cmap="Reds", levels=5, ax = ax[0])
+sns.kdeplot(x=cl_TNG[:, 4], y=cl_TNG[:, 5], fill=False, cmap="Reds", levels=5, ax = ax[0])
 
 ind = np.random.choice(np.arange(len(bs)), replace = False, size = 1000)
 sns.kdeplot(x=bs[ind, 3], y=bs[ind, 4], fill=True, cmap="Oranges", levels=5, ax = ax[1])
-sns.kdeplot(x=bs_TNG[:, 3], y=bs_TNG[:, 4], fill=False, cmap="Oranges", levels=5, ax = ax[1])
+sns.kdeplot(x=bs_TNG[:, 4], y=bs_TNG[:, 5], fill=False, cmap="Oranges", levels=5, ax = ax[1])
 
 ind = np.random.choice(np.arange(len(rin)), replace = False, size = 1000)
 sns.kdeplot(x=rin[ind, 3], y=rin[ind, 4], fill=True, cmap="Greens", levels=5, ax = ax[2])
-sns.kdeplot(x=rin_TNG[:, 3], y=rin_TNG[:, 4], fill=False, cmap="Greens", levels=5, ax = ax[2])
+sns.kdeplot(x=rin_TNG[:, 4], y=rin_TNG[:, 5], fill=False, cmap="Greens", levels=5, ax = ax[2])
 
 ind = np.random.choice(np.arange(len(inf)), replace = False, size = 1000)
 sns.kdeplot(x=inf[ind, 3], y=inf[ind, 4], fill=True, cmap="Blues", levels=5, ax = ax[3])
-sns.kdeplot(x=inf_TNG[:, 3], y=inf_TNG[:, 4], fill=False, cmap="Blues", levels=5, ax = ax[3])
+sns.kdeplot(x=inf_TNG[:, 4], y=inf_TNG[:, 5], fill=False, cmap="Blues", levels=5, ax = ax[3])
 
 ind = np.random.choice(np.arange(len(itl)), replace = False, size = 1000)
 sns.kdeplot(x=itl[ind, 3], y=itl[ind, 4], fill=True, cmap="Greys", levels=5, ax = ax[4])
-sns.kdeplot(x=itl_TNG[:, 3], y=itl_TNG[:, 4], fill=False, cmap="Greys", levels=5, ax = ax[4])
+sns.kdeplot(x=itl_TNG[:, 4], y=itl_TNG[:, 5], fill=False, cmap="Greys", levels=5, ax = ax[4])
 
 ax[0].set_xlabel('$r / R_{200}$', fontsize = 12)
 ax[1].set_xlabel('$r / R_{200}$', fontsize = 12)
@@ -285,27 +295,27 @@ for i in range(4):
     ind = np.where(cl_bins ==  (i+1))[0]
     if len(ind) > 1000: ind = np.random.choice(ind, replace = False, size = 1000)
     sns.kdeplot(x=cl[ind, 3], y=cl[ind, 4], fill=True, cmap="Reds", levels=5, ax = ax[i,0])
-    sns.kdeplot(x=cl_TNG[:, 3], y=cl_TNG[:, 4], fill=False, cmap="Reds", levels=5, ax = ax[i,0])
+    sns.kdeplot(x=cl_TNG[:, 4], y=cl_TNG[:, 5], fill=False, cmap="Reds", levels=5, ax = ax[i,0])
     
     ind = np.where(bs_bins ==  (i+1))[0]
     if len(ind) > 1000: ind = np.random.choice(ind, replace = False, size = 1000)
     sns.kdeplot(x=bs[ind, 3], y=bs[ind, 4], fill=True, cmap="Oranges", levels=5, ax = ax[i,1])
-    sns.kdeplot(x=bs_TNG[:, 3], y=bs_TNG[:, 4], fill=False, cmap="Oranges", levels=5, ax = ax[i,1])
+    sns.kdeplot(x=bs_TNG[:, 4], y=bs_TNG[:, 5], fill=False, cmap="Oranges", levels=5, ax = ax[i,1])
     
     ind = np.where(rin_bins ==  (i+1))[0]
     if len(ind) > 1000: ind = np.random.choice(ind, replace = False, size = 1000)
     sns.kdeplot(x=rin[ind, 3], y=rin[ind, 4], fill=True, cmap="Greens", levels=5, ax = ax[i,2])
-    sns.kdeplot(x=rin_TNG[:, 3], y=rin_TNG[:, 4], fill=False, cmap="Greens", levels=5, ax = ax[i,2])
+    sns.kdeplot(x=rin_TNG[:, 4], y=rin_TNG[:, 5], fill=False, cmap="Greens", levels=5, ax = ax[i,2])
     
     ind = np.where(inf_bins ==  (i+1))[0]
     if len(ind) > 1000: ind = np.random.choice(ind, replace = False, size = 1000)
     sns.kdeplot(x=inf[ind, 3], y=inf[ind, 4], fill=True, cmap="Blues", levels=5, ax = ax[i,3])
-    sns.kdeplot(x=inf_TNG[:, 3], y=inf_TNG[:, 4], fill=False, cmap="Blues", levels=5, ax = ax[i,3])
+    sns.kdeplot(x=inf_TNG[:, 4], y=inf_TNG[:, 5], fill=False, cmap="Blues", levels=5, ax = ax[i,3])
     
     ind = np.where(itl_bins ==  (i+1))[0]
     if len(ind) > 1000: ind = np.random.choice(ind, replace = False, size = 1000)
     sns.kdeplot(x=itl[ind, 3], y=itl[ind, 4], fill=True, cmap="Greys", levels=5, ax = ax[i,4])
-    sns.kdeplot(x=itl_TNG[:, 3], y=itl_TNG[:, 4], fill=False, cmap="Greys", levels=5, ax = ax[i,4])
+    sns.kdeplot(x=itl_TNG[:, 4], y=itl_TNG[:, 5], fill=False, cmap="Greys", levels=5, ax = ax[i,4])
 
     ax[i,0].text(0.1,0.8, '{:.2f} < M < {:.2f}'.format(mass_bins[i],mass_bins[i+1]), transform = ax[i,0].transAxes)
 ax[3,0].set_xlabel('$r / R_{200}$', fontsize = 12)
@@ -347,7 +357,8 @@ len(gal_train_ind)
 
 len(gal_test_ind)
 
-np.savetxt('../../test_data.dat', data[gal_test_ind])
+# +
+#np.savetxt('../../test_data.dat', data[gal_test_ind])
 
 # +
 comments = """ 
@@ -374,10 +385,10 @@ real_class = data[gal_test_ind, 1]
 pred_class = Roger2.predict_class(data[gal_test_ind, 2:], n_model=0)
 pred_prob = Roger2.predict_prob(data[gal_test_ind, 2:], n_model=0)
 # +
-real_class_TNG = data_TNG[:, 1]
+real_class_TNG = data_TNG[:, 2]
 
-pred_class_TNG = Roger2.predict_class(data_TNG[:, 2:], n_model=0)
-pred_prob_TNG = Roger2.predict_prob(data_TNG[:, 2:], n_model=0)
+pred_class_TNG = Roger2.predict_class(data_TNG[:, 3:], n_model=0)
+pred_prob_TNG = Roger2.predict_prob(data_TNG[:, 3:], n_model=0)
 
 # +
 readme = '''
@@ -412,6 +423,7 @@ readme = '''
          -------
          
          ID_cl: Cluster ID.
+         ID_sub: Subhalo ID.
          class: Real class.
          LogM: Log10 of the cluster mass.
          R/R200: Galaxy radial distance to the cluster center, normalized to R200.
@@ -423,12 +435,13 @@ readme = '''
          P_itl: Probability of being a iterloper galaxy.
          '''
 
-np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_clean.txt', np.hstack((data_TNG, pred_prob_TNG)),
-          header = 'ID_cl class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
+np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25.txt', np.hstack((data_TNG, pred_prob_TNG)),
+          header = 'ID_cl ID_sub class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
           comments = readme)
-pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG.txt', skiprows = 17)
-pr2 = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_v2.txt', skiprows = 17)
-prclean = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_clean.txt', skiprows = 17)
+#pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG.txt', skiprows = 17)
+#pr2 = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_v2.txt', skiprows = 17)
+#prclean = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_clean.txt', skiprows = 17)
+pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25.txt', skiprows = 18)
 
 # +
 conf_mat,_ = Roger2.confusion_matrix(real_class, pred_class)
@@ -441,7 +454,7 @@ conf_mat_TNG,_ = Roger2.confusion_matrix(real_class_TNG, pred_class_TNG)
 
 plot_confusion_matrix(conf_mat_TNG, show_absolute=True, show_normed=True, class_names=labels)
 
-plt.savefig('../graphs/confusionMatrix_TNG_ROGER2_KNN.pdf')
+#plt.savefig('../graphs/confusionMatrix_TNG_ROGER2_KNN.pdf')
 
 # +
 cmaps = ['Reds', 'Oranges', 'Greens', 'Blues', 'Greys']
