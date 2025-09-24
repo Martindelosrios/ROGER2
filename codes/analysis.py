@@ -8,7 +8,7 @@ import sklearn as sk
 import pandas as pd
 from scipy.stats import binned_statistic_2d
 import seaborn as sns
-import emcee
+#import emcee
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.datasets import make_classification
 from itertools import product
@@ -68,8 +68,6 @@ print('Hay ' + str(len(bs)) + ' backsplash galaxies')
 print('Hay ' + str(len(inf)) + ' infalling galaxies')
 print('Hay ' + str(len(itl)) + ' interlooper galaxies')
 # -
-
-np.max(aux_TNG[:,1])
 
 aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_10_09_25.dat', sep="\t")
 
@@ -339,7 +337,7 @@ print('There are ' + str(nclusters) + ' clusters')
 
 # +
 ntrain = int(0.8 * nclusters)
-ntest = ntrain#nclusters - ntrain
+ntest = nclusters - ntrain
 
 np.random.seed(91218)
 random_ind = np.random.choice(cl_ind, replace = False, size = nclusters)
@@ -351,7 +349,8 @@ cl_test_ind = random_ind[ntrain:]
 gal_train_ind = np.where(np.isin(data[:,0], cl_train_ind) == True)[0]
 gal_test_ind = np.where(np.isin(data[:,0], cl_test_ind) == True)[0]
 
-gal_test_ind = np.random.choice(gal_test_ind, size = 1000)
+gal_test_ind = np.random.choice(gal_test_ind, size = 10000)
+gal_train_ind = np.random.choice(gal_train_ind, size = 100000)
 
 len(gal_train_ind)
 
@@ -364,6 +363,10 @@ len(gal_test_ind)
 comments = """ 
       ROGER2 model for isolated galaxy clusters with masses
       bigger than >10^{13} M_{sun}.
+      The input must be a np.array with shape (Nobs, 3), where
+      [:,0] = log10(M_{cluster} [M_{sun}])
+      [:,1] = R / R_{200}
+      [:,2] = |\\Delta V| / \\sigma
     """
 
 Roger2 = roger.RogerModel(x_dataset = data[gal_train_ind, 2:], y_dataset = data[gal_train_ind, 1], comments=comments, 
@@ -374,8 +377,8 @@ Roger2.ml_models
 
 # !ls ../data/models
 
-Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
-#Roger2.train(path_to_save = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
+#Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
+Roger2.train(path_to_save = ['../data/models/roger2_KNN_tiny.joblib','../data/models/roger2_RF_tiny.joblib'])
 
 Roger2.trained
 
@@ -435,13 +438,22 @@ readme = '''
          P_itl: Probability of being a iterloper galaxy.
          '''
 
-np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25.txt', np.hstack((data_TNG, pred_prob_TNG)),
+pr = np.hstack((data_TNG, pred_prob_TNG))
+np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25.txt', pr,
           header = 'ID_cl ID_sub class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
           comments = readme)
 #pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG.txt', skiprows = 17)
 #pr2 = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_v2.txt', skiprows = 17)
 #prclean = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_clean.txt', skiprows = 17)
 pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25.txt', skiprows = 18)
+# -
+
+pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25_ori.txt', skiprows = 18)
+
+pr1 = np.hstack((data_TNG, pred_prob_TNG))
+
+
+plt.scatter(pr[:,6], pr1[:,6])
 
 # +
 conf_mat,_ = Roger2.confusion_matrix(real_class, pred_class)
