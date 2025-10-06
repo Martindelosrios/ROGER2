@@ -69,7 +69,9 @@ print('Hay ' + str(len(inf)) + ' infalling galaxies')
 print('Hay ' + str(len(itl)) + ' interlooper galaxies')
 # -
 
-aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_10_09_25.dat', sep="\t")
+# !ls ../data/
+
+aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_03_10_25.dat', sep="\t")
 
 
 aux_TNG
@@ -91,7 +93,7 @@ aux_TNG
 #aux_TNG = np.asarray(aux_TNG)[:,:5]
 
 
-aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_10_09_25.dat', sep="\t")
+aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_03_10_25.dat', sep="\t")
 aux_TNG = np.asarray(aux_TNG)
 
 data_TNG = np.copy(aux_TNG)
@@ -377,8 +379,8 @@ Roger2.ml_models
 
 # !ls ../data/models
 
-#Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
-Roger2.train(path_to_save = ['../data/models/roger2_KNN_tiny.joblib','../data/models/roger2_RF_tiny.joblib'])
+Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
+#Roger2.train(path_to_save = ['../data/models/roger2_KNN_tiny.joblib','../data/models/roger2_RF_tiny.joblib'])
 
 Roger2.trained
 
@@ -439,13 +441,13 @@ readme = '''
          '''
 
 pr = np.hstack((data_TNG, pred_prob_TNG))
-np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25.txt', pr,
+np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_03_10_25.txt', pr,
           header = 'ID_cl ID_sub class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
           comments = readme)
 #pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG.txt', skiprows = 17)
 #pr2 = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_v2.txt', skiprows = 17)
 #prclean = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_clean.txt', skiprows = 17)
-pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25.txt', skiprows = 18)
+pr1 = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_03_10_25.txt', skiprows = 18)
 # -
 
 pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25_ori.txt', skiprows = 18)
@@ -453,7 +455,7 @@ pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25_ori.txt',
 pr1 = np.hstack((data_TNG, pred_prob_TNG))
 
 
-plt.scatter(pr[:,6], pr1[:,6])
+plt.scatter(data_TNG[:,3], pr1[:,3])
 
 # +
 conf_mat,_ = Roger2.confusion_matrix(real_class, pred_class)
