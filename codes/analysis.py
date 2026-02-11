@@ -62,12 +62,14 @@ rin = data[np.where(data[:,1] == 3)[0]]
 inf = data[np.where(data[:,1] == 4)[0]]
 itl = data[np.where(data[:,1] == 5)[0]]
 
-print('Hay ' + str(len(cl)) + ' cluster galaxies')
-print('Hay ' + str(len(rin)) + ' recent infalling galaxies')
-print('Hay ' + str(len(bs)) + ' backsplash galaxies')
-print('Hay ' + str(len(inf)) + ' infalling galaxies')
-print('Hay ' + str(len(itl)) + ' interlooper galaxies')
+print('Hay ' + str(len(cl)) + ' cluster galaxies, the ', str(100*len(cl)/len(data)), ' %')
+print('Hay ' + str(len(rin)) + ' recent infalling galaxies, the ', str(100*len(rin)/len(data)), ' %')
+print('Hay ' + str(len(bs)) + ' backsplash galaxies, the ', str(100*len(bs)/len(data)), ' %')
+print('Hay ' + str(len(inf)) + ' infalling galaxies, the ', str(100*len(inf)/len(data)), ' %')
+print('Hay ' + str(len(itl)) + ' interlooper galaxies, the ', str(100*len(itl)/len(data)), ' %')
 # -
+
+
 
 # !ls ../data/
 
