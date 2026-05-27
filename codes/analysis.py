@@ -74,9 +74,14 @@ print('Hay ' + str(len(itl)) + ' interlooper galaxies, the ', str(100*len(itl)/l
 # !ls ../data/
 
 aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_03_10_25.dat', sep="\t")
+aux_TNG1 = pd.read_csv(DATA_PATH + 'data_tng300.dat', sep="\t")
 
+
+aux_TNG1
 
 aux_TNG
+
+plt.scatter(aux_TNG['orbit_type'], aux_TNG1['orbit_type'][:39523])
 
 # +
 #aux_TNG = np.loadtxt(DATA_PATH + 'data_tng300_clean.dat', skiprows = 1)
@@ -137,6 +142,48 @@ bs_TNG  = data_TNG[np.where(data_TNG[:,2] == 2)[0]]
 rin_TNG = data_TNG[np.where(data_TNG[:,2] == 3)[0]]
 inf_TNG = data_TNG[np.where(data_TNG[:,2] == 4)[0]]
 itl_TNG = data_TNG[np.where(data_TNG[:,2] == 5)[0]]
+
+print('Hay ' + str(len(cl_TNG)) + ' cluster galaxies')
+print('Hay ' + str(len(rin_TNG)) + ' recent infalling galaxies')
+print('Hay ' + str(len(bs_TNG)) + ' backsplash galaxies')
+print('Hay ' + str(len(inf_TNG)) + ' infalling galaxies')
+print('Hay ' + str(len(itl_TNG)) + ' interlooper galaxies')
+
+# +
+aux_TNG1 = pd.read_csv(DATA_PATH + 'data_tng300.dat', sep="\t")
+aux_TNG1 = np.asarray(aux_TNG1)
+
+data_TNG1 = np.copy(aux_TNG1)
+
+# Put the correct order needed for pyroger
+data_TNG1[:,2] = aux_TNG1[:,3] # [:,2] need to be the class
+data_TNG1[:,3] = aux_TNG1[:,2] # [:,3] need to be log mass
+data_TNG1[:,4] = aux_TNG1[:,4] # [:,4] need to be r/r200
+data_TNG1[:,5] = aux_TNG1[:,5] # [:,5] need to be v/sigma
+
+# change class beacuse in pyroger class=2 is blacksplash
+#ind = np.where(aux_TNG[:,3] == 2)
+#data_TNG[ind,2] = 1
+
+# change class beacuse in pyroger class=1 is cluster
+#ind = np.where(aux_TNG[:,3] == 1)
+#data_TNG[ind,2] = 2
+
+data_TNG1[:,3] = data_TNG1[:,3]
+
+# data_TNG[:,0] =  halo ID
+# data_TNG[:,1] =  subhalo ID
+# data_TNG[:,2] =  clasificacion real de la galaxia (CL = 1, BS = 2, RIN = 3, IN = 4, ITL = 5)
+# data_TNG[:,3] = log masa del cumulo
+# data_TNG[:,4] = rp/R200
+# data_TNG[:,5] = |Delta V|/sigma
+
+# +
+cl_TNG  = data_TNG1[np.where(data_TNG1[:,2] == 1)[0]]
+bs_TNG  = data_TNG1[np.where(data_TNG1[:,2] == 2)[0]]
+rin_TNG = data_TNG1[np.where(data_TNG1[:,2] == 3)[0]]
+inf_TNG = data_TNG1[np.where(data_TNG1[:,2] == 4)[0]]
+itl_TNG = data_TNG1[np.where(data_TNG1[:,2] == 5)[0]]
 
 print('Hay ' + str(len(cl_TNG)) + ' cluster galaxies')
 print('Hay ' + str(len(rin_TNG)) + ' recent infalling galaxies')
@@ -392,10 +439,10 @@ real_class = data[gal_test_ind, 1]
 pred_class = Roger2.predict_class(data[gal_test_ind, 2:], n_model=0)
 pred_prob = Roger2.predict_prob(data[gal_test_ind, 2:], n_model=0)
 # +
-real_class_TNG = data_TNG[:, 2]
+real_class_TNG = data_TNG1[:, 2]
 
-pred_class_TNG = Roger2.predict_class(data_TNG[:, 3:], n_model=0)
-pred_prob_TNG = Roger2.predict_prob(data_TNG[:, 3:], n_model=0)
+pred_class_TNG = Roger2.predict_class(data_TNG1[:, 3:], n_model=0)
+pred_prob_TNG = Roger2.predict_prob(data_TNG1[:, 3:], n_model=0)
 
 # +
 readme = '''
@@ -442,14 +489,14 @@ readme = '''
          P_itl: Probability of being a iterloper galaxy.
          '''
 
-pr = np.hstack((data_TNG, pred_prob_TNG))
-np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_03_10_25.txt', pr,
+pr = np.hstack((data_TNG1, pred_prob_TNG))
+np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_27_05_26.txt', pr,
           header = 'ID_cl ID_sub class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
           comments = readme)
 #pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG.txt', skiprows = 17)
 #pr2 = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_v2.txt', skiprows = 17)
 #prclean = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_clean.txt', skiprows = 17)
-pr1 = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_03_10_25.txt', skiprows = 18)
+pr1 = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_27_05_26.txt', skiprows = 18)
 # -
 
 pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25_ori.txt', skiprows = 18)
@@ -470,7 +517,7 @@ conf_mat_TNG,_ = Roger2.confusion_matrix(real_class_TNG, pred_class_TNG)
 
 plot_confusion_matrix(conf_mat_TNG, show_absolute=True, show_normed=True, class_names=labels)
 
-#plt.savefig('../graphs/confusionMatrix_TNG_ROGER2_KNN.pdf')
+plt.savefig('../graphs/confusionMatrix_TNG_ROGER2_KNN_27_05_26.pdf')
 
 # +
 cmaps = ['Reds', 'Oranges', 'Greens', 'Blues', 'Greys']
