@@ -3,6 +3,8 @@
 # +
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+import matplotlib.patches as mpatches
 import matplotlib as mpl
 import sklearn as sk
 import pandas as pd
@@ -44,7 +46,7 @@ DATA_PATH = '../data/'
 
 # +
 # ROGER 2 data
-data = np.loadtxt(DATA_PATH + 'chuti_sorted.dat')
+data_mld = np.loadtxt(DATA_PATH + 'chuti_sorted.dat')
 
 # data[:,0] = nro de cumulo
 # data[:,1] =  clasificacion real de la galaxia (CL = 1, BS = 2, RIN =3, IN = 4, ITL =5)
@@ -53,35 +55,22 @@ data = np.loadtxt(DATA_PATH + 'chuti_sorted.dat')
 # data[:,4] = |Delta V|/sigma
 # -
 
-data.shape
+data_mld.shape
 
 # +
-cl  = data[np.where(data[:,1] == 1)[0]]
-bs  = data[np.where(data[:,1] == 2)[0]]
-rin = data[np.where(data[:,1] == 3)[0]]
-inf = data[np.where(data[:,1] == 4)[0]]
-itl = data[np.where(data[:,1] == 5)[0]]
+cl_mld  = data_mld[np.where(data_mld[:,1] == 1)[0]]
+bs_mld  = data_mld[np.where(data_mld[:,1] == 2)[0]]
+rin_mld = data_mld[np.where(data_mld[:,1] == 3)[0]]
+inf_mld = data_mld[np.where(data_mld[:,1] == 4)[0]]
+itl_mld = data_mld[np.where(data_mld[:,1] == 5)[0]]
 
-print('Hay ' + str(len(cl)) + ' cluster galaxies, the ', str(100*len(cl)/len(data)), ' %')
-print('Hay ' + str(len(rin)) + ' recent infalling galaxies, the ', str(100*len(rin)/len(data)), ' %')
-print('Hay ' + str(len(bs)) + ' backsplash galaxies, the ', str(100*len(bs)/len(data)), ' %')
-print('Hay ' + str(len(inf)) + ' infalling galaxies, the ', str(100*len(inf)/len(data)), ' %')
-print('Hay ' + str(len(itl)) + ' interlooper galaxies, the ', str(100*len(itl)/len(data)), ' %')
+print('Hay ' + str(len(cl_mld)) + ' cluster galaxies, the ', str(100*len(cl_mld)/len(data_mld)), ' %')
+print('Hay ' + str(len(rin_mld)) + ' recent infalling galaxies, the ', str(100*len(rin_mld)/len(data_mld)), ' %')
+print('Hay ' + str(len(bs_mld)) + ' backsplash galaxies, the ', str(100*len(bs_mld)/len(data_mld)), ' %')
+print('Hay ' + str(len(inf_mld)) + ' infalling galaxies, the ', str(100*len(inf_mld)/len(data_mld)), ' %')
+print('Hay ' + str(len(itl_mld)) + ' interlooper galaxies, the ', str(100*len(itl_mld)/len(data_mld)), ' %')
 # -
-
-
-
-# !ls ../data/
-
-aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_03_10_25.dat', sep="\t")
-aux_TNG1 = pd.read_csv(DATA_PATH + 'data_tng300.dat', sep="\t")
-
-
-aux_TNG1
-
-aux_TNG
-
-plt.scatter(aux_TNG['orbit_type'], aux_TNG1['orbit_type'][:39523])
+# !ls -lth ../data/
 
 # +
 #aux_TNG = np.loadtxt(DATA_PATH + 'data_tng300_clean.dat', skiprows = 1)
@@ -150,16 +139,17 @@ print('Hay ' + str(len(inf_TNG)) + ' infalling galaxies')
 print('Hay ' + str(len(itl_TNG)) + ' interlooper galaxies')
 
 # +
-aux_TNG1 = pd.read_csv(DATA_PATH + 'data_tng300.dat', sep="\t")
-aux_TNG1 = np.asarray(aux_TNG1)
+aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_25_06_26.dat', sep="\t")
+#aux_TNG = pd.read_csv(DATA_PATH + 'data_tng300_sin_orphan.dat', sep="\t")
+aux_TNG = np.asarray(aux_TNG)
 
-data_TNG1 = np.copy(aux_TNG1)
+data_TNG = np.copy(aux_TNG)
 
 # Put the correct order needed for pyroger
-data_TNG1[:,2] = aux_TNG1[:,3] # [:,2] need to be the class
-data_TNG1[:,3] = aux_TNG1[:,2] # [:,3] need to be log mass
-data_TNG1[:,4] = aux_TNG1[:,4] # [:,4] need to be r/r200
-data_TNG1[:,5] = aux_TNG1[:,5] # [:,5] need to be v/sigma
+data_TNG[:,2] = aux_TNG[:,3] # [:,2] need to be the class
+data_TNG[:,3] = aux_TNG[:,2] # [:,3] need to be log mass
+data_TNG[:,4] = aux_TNG[:,4] # [:,4] need to be r/r200
+data_TNG[:,5] = aux_TNG[:,5] # [:,5] need to be v/sigma
 
 # change class beacuse in pyroger class=2 is blacksplash
 #ind = np.where(aux_TNG[:,3] == 2)
@@ -169,7 +159,7 @@ data_TNG1[:,5] = aux_TNG1[:,5] # [:,5] need to be v/sigma
 #ind = np.where(aux_TNG[:,3] == 1)
 #data_TNG[ind,2] = 2
 
-data_TNG1[:,3] = data_TNG1[:,3]
+data_TNG[:,3] = data_TNG[:,3]
 
 # data_TNG[:,0] =  halo ID
 # data_TNG[:,1] =  subhalo ID
@@ -177,19 +167,24 @@ data_TNG1[:,3] = data_TNG1[:,3]
 # data_TNG[:,3] = log masa del cumulo
 # data_TNG[:,4] = rp/R200
 # data_TNG[:,5] = |Delta V|/sigma
+# -
+
+data_TNG = data_TNG[:,:-2] # Solo para el archivo sin orphans
+
+data_TNG[:,5
 
 # +
-cl_TNG  = data_TNG1[np.where(data_TNG1[:,2] == 1)[0]]
-bs_TNG  = data_TNG1[np.where(data_TNG1[:,2] == 2)[0]]
-rin_TNG = data_TNG1[np.where(data_TNG1[:,2] == 3)[0]]
-inf_TNG = data_TNG1[np.where(data_TNG1[:,2] == 4)[0]]
-itl_TNG = data_TNG1[np.where(data_TNG1[:,2] == 5)[0]]
+cl_TNG  = data_TNG[np.where(data_TNG[:,2] == 1)[0]]
+bs_TNG  = data_TNG[np.where(data_TNG[:,2] == 2)[0]]
+rin_TNG = data_TNG[np.where(data_TNG[:,2] == 3)[0]]
+inf_TNG = data_TNG[np.where(data_TNG[:,2] == 4)[0]]
+itl_TNG = data_TNG[np.where(data_TNG[:,2] == 5)[0]]
 
-print('Hay ' + str(len(cl_TNG)) + ' cluster galaxies')
-print('Hay ' + str(len(rin_TNG)) + ' recent infalling galaxies')
-print('Hay ' + str(len(bs_TNG)) + ' backsplash galaxies')
-print('Hay ' + str(len(inf_TNG)) + ' infalling galaxies')
-print('Hay ' + str(len(itl_TNG)) + ' interlooper galaxies')
+print('Hay ' + str(len(cl_TNG)) + ' cluster galaxies, the ', str(100*len(cl_TNG)/len(data_TNG)), ' %')
+print('Hay ' + str(len(rin_TNG)) + ' recent infalling galaxies, the ', str(100*len(rin_TNG)/len(data_TNG)), ' %')
+print('Hay ' + str(len(bs_TNG)) + ' backsplash galaxies, the ', str(100*len(bs_TNG)/len(data_TNG)), ' %')
+print('Hay ' + str(len(inf_TNG)) + ' infalling galaxies, the ', str(100*len(inf_TNG)/len(data_TNG)), ' %')
+print('Hay ' + str(len(itl_TNG)) + ' interlooper galaxies, the ', str(100*len(itl_TNG)/len(data_TNG)), ' %')
 # -
 
 # ## Plots
@@ -289,6 +284,8 @@ ax[3].set_xlabel('$r / R_{200}$', fontsize = 12)
 ax[4].set_xlabel('$r / R_{200}$', fontsize = 12)
 ax[0].set_ylabel('$v / \sigma$', fontsize = 12)
 
+ax[0].set_xlim(0,3)
+ax[0].set_ylim(0,3)
 #plt.savefig('../graphs/R_V_distros_comparison.pdf')
 # -
 
@@ -380,9 +377,9 @@ ax[3,0].set_ylim(0,3)
 #plt.savefig('../graphs/R_V_distros_massbins.pdf')
 # -
 
-# # Analysis
+# # Training with TNG
 
-cl_ind = np.unique(data[:,0])
+cl_ind = np.unique(data_TNG[:,0])
 nclusters = len(cl_ind)
 print('There are ' + str(nclusters) + ' clusters')
 
@@ -397,8 +394,214 @@ cl_train_ind = random_ind[:ntrain]
 cl_test_ind = random_ind[ntrain:]
 # -
 
-gal_train_ind = np.where(np.isin(data[:,0], cl_train_ind) == True)[0]
-gal_test_ind = np.where(np.isin(data[:,0], cl_test_ind) == True)[0]
+gal_train_ind = np.where(np.isin(data_TNG[:,0], cl_train_ind) == True)[0]
+gal_test_ind = np.where(np.isin(data_TNG[:,0], cl_test_ind) == True)[0]
+
+print(len(gal_train_ind))
+print(len(gal_test_ind))
+
+# +
+comments = """ 
+      ROGER2 model for isolated galaxy clusters with masses
+      bigger than >10^{13} M_{sun} extracted from TNG300.
+      The input must be a np.array with shape (Nobs, 3), where
+      [:,0] = log10(M_{cluster} [M_{sun}])
+      [:,1] = R / R_{200}
+      [:,2] = |\\Delta V| / \\sigma
+    """
+
+RogerTNG300_wo = roger.RogerModel(x_dataset = data_TNG[gal_train_ind, 3:], y_dataset = data_TNG[gal_train_ind, 2], comments=comments, 
+                          ml_models = [KNeighborsClassifier(n_neighbors=63), RandomForestClassifier(max_depth=2, random_state=0)])
+# -
+
+#RogerTNG300.train(path_to_saved_model = ['../data/models/rogerTNG300_KNN.joblib','../data/models/rogerTNG300_RF.joblib'])
+RogerTNG300_wo.train(path_to_save = ['../data/models/rogerTNG300_KNN.joblib','../data/models/rogerTNG300_RF.joblib'])
+
+RogerTNG300.trained
+
+# +
+real_class = data_TNG[gal_test_ind, 2]
+
+pred_class = RogerTNG300.predict_class(data_TNG[gal_test_ind, 3:], n_model=0)
+pred_prob = RogerTNG300.predict_prob(data_TNG[gal_test_ind, 3:], n_model=0)
+
+# +
+conf_mat_TNG,_ = RogerTNG300.confusion_matrix(real_class, pred_class)
+
+plot_confusion_matrix(conf_mat_TNG, show_absolute=True, show_normed=True, class_names=labels)
+
+plt.savefig('../graphs/confusionMatrix_TNG_ROGERTNG300_KNN.pdf')
+
+# +
+random_ind = np.random.randint(0, len(data), 10000)
+real_class_MLD = data[random_ind, 1]
+
+pred_class_MLD = RogerTNG300.predict_class(data[random_ind, 2:], n_model=0)
+pred_prob_MLD = RogerTNG300.predict_prob(data[random_ind, 2:], n_model=0)
+
+# +
+# data_TNG[:,0] =  halo ID
+# data_TNG[:,1] =  subhalo ID
+# data_TNG[:,2] =  clasificacion real de la galaxia (CL = 1, BS = 2, RIN = 3, IN = 4, ITL = 5)
+# data_TNG[:,3] = log masa del cumulo
+# data_TNG[:,4] = rp/R200
+# data_TNG[:,5] = |Delta V|/sigma
+
+# +
+readme = '''
+         Data set used for testing ROGER2 trained with TNG300. Results corresponding to KNN method.
+
+         Columns:
+         -------
+         
+         ID_halo: Halo ID.
+         ID_subhalo: Subhalo ID.
+         class: Real class.
+         LogM: Log10 of the cluster mass.
+         R/R200: Galaxy radial distance to the cluster center, normalized to R200.
+         V/sigma: Galaxy relative velocity to cluster center normalized to cluster velocity dispersion.
+         P_cl: Probability of being a cluster galaxy.
+         P_bs: Probability of being a backsplash galaxy.
+         P_rin: Probability of being a recent infaller galaxy.
+         P_in: Probability of being an infalling galaxy.
+         P_itl: Probability of being a iterloper galaxy.
+         '''
+np.savetxt('../data/ROGERTNG300_KNN_probabilities_testset.txt',  np.hstack((data_TNG1[gal_test_ind], pred_prob)),
+          header = 'ID_gal ID_cl class LogM R/R200 V/sigma P_cl P_bs P_rin P_in P_itl',
+          comments = readme)
+
+#pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
+
+# +
+conf_mat_MLD,_ = RogerTNG300.confusion_matrix(real_class_MLD, pred_class_MLD)
+
+plot_confusion_matrix(conf_mat_MLD, show_absolute=True, show_normed=True, class_names=labels)
+
+plt.savefig('../graphs/confusionMatrix_MLD_ROGERTNG300_KNN.pdf')
+
+# +
+mean_CL_prob, x_edges, y_edges, _ = binned_statistic_2d(data_TNG[gal_test_ind,4], data_TNG[gal_test_ind,5], pred_prob[:,0], statistic='mean', bins=20)
+mean_BS_prob, _, _, _ = binned_statistic_2d(data_TNG[gal_test_ind,4], data_TNG[gal_test_ind,5], pred_prob[:,1], statistic='mean', bins=[x_edges, y_edges])
+mean_RIN_prob, _, _, _ = binned_statistic_2d(data_TNG[gal_test_ind,4], data_TNG[gal_test_ind,5], pred_prob[:,2], statistic='mean', bins=[x_edges, y_edges])
+mean_IN_prob, _, _, _ = binned_statistic_2d(data_TNG[gal_test_ind,4], data_TNG[gal_test_ind,5], pred_prob[:,3], statistic='mean', bins=[x_edges, y_edges])
+mean_ITL_prob, _, _, _ = binned_statistic_2d(data_TNG[gal_test_ind,4], data_TNG[gal_test_ind,5], pred_prob[:,4], statistic='mean', bins=[x_edges, y_edges])
+
+X_edges, Y_edges = np.meshgrid(x_edges, y_edges)
+
+X_centers = 0.5 * (x_edges[:-1] + x_edges[1:])  # Centros de los bins en X
+Y_centers = 0.5 * (y_edges[:-1] + y_edges[1:])  # Centros de los bins en Y
+X, Y = np.meshgrid(X_centers, Y_centers)
+
+# +
+fig,ax = plt.subplots(1,5, figsize = (14,5), sharex = True, sharey = True)
+plt.subplots_adjust(wspace = 0.1)
+
+ax[0].pcolormesh(X_edges, Y_edges, mean_CL_prob.T, cmap="Reds", shading='auto', vmin = 0, vmax = 1)
+contours0 = ax[0].contour(X, Y, mean_CL_prob.T, levels=[0.2, 0.5, 0.8], colors='red', linestyles = [':','--','solid'], origin='upper')
+ind = np.random.choice(np.arange(len(cl_TNG)), replace = False, size = 1000)
+sns.kdeplot(x=cl_TNG[ind, 4], y=cl_TNG[ind, 5], fill=False, alpha = 0.7, color="black", levels=[0.2, 0.5, 0.8], ax = ax[0], zorder = 10, linestyles=[':', '--', 'solid'])
+ax[0].clabel(contours0, inline=True, fontsize=10, fmt="%.2f")
+ax[0].set_xlabel('$R_{proj} / R_{200}$')
+ax[0].set_ylabel('$|\Delta V_{los} / \sigma|$')
+ax[0].set_title('<$P_{CL}$>')
+
+ax[1].pcolormesh(X_edges, Y_edges, mean_BS_prob.T, cmap="Oranges", shading='auto', vmin = 0, vmax = 1)
+contours1 = ax[1].contour(X, Y, mean_BS_prob.T, levels=[0.2, 0.5, 0.8], colors='orange', linestyles = [':','--','solid'], origin='upper')
+ind = np.random.choice(np.arange(len(bs_TNG)), replace = False, size = 1000)
+sns.kdeplot(x=bs_TNG[ind, 4], y=bs_TNG[ind, 5], fill=False, alpha = 0.7, color="black", levels=[0.2, 0.5, 0.8], ax = ax[1], zorder = 10, linestyles=[':', '--', 'solid'])
+ax[1].clabel(contours1, inline=True, fontsize=10, fmt="%.2f")
+ax[1].set_xlabel('$R_{proj} / R_{200}$')
+ax[1].set_title('<$P_{BS}$>')
+
+ax[2].pcolormesh(X_edges, Y_edges, mean_RIN_prob.T, cmap="Greens", shading='auto', vmin = 0, vmax = 1)
+contours2 = ax[2].contour(X, Y, mean_RIN_prob.T, levels=[0.2, 0.5, 0.8], colors='green', linestyles = [':','--','solid'], origin='upper')
+ind = np.random.choice(np.arange(len(rin_TNG)), replace = False, size = 1000)
+sns.kdeplot(x=rin_TNG[ind, 4], y=rin_TNG[ind,5], fill=False, alpha = 0.7, color="black", levels=[0.2, 0.5, 0.8], ax = ax[2], zorder = 10, linestyles=[':', '--', 'solid'])
+ax[2].clabel(contours2, inline=True, fontsize=10, fmt="%.2f")
+ax[2].set_xlabel('$R_{proj} / R_{200}$')
+ax[2].set_title('<$P_{RIN}$>')
+
+ax[3].pcolormesh(X_edges, Y_edges, mean_IN_prob.T, cmap="Blues", shading='auto', vmin = 0, vmax = 1)
+contours3 = ax[3].contour(X, Y, mean_IN_prob.T, levels=[0.2, 0.5, 0.8], colors='blue', linestyles = [':','--','solid'], origin='upper')
+ind = np.random.choice(np.arange(len(inf_TNG)), replace = False, size = 1000)
+sns.kdeplot(x=inf_TNG[ind, 4], y=inf_TNG[ind,5], fill=False, alpha = 0.7, color="black", levels=[0.2, 0.5, 0.8], ax = ax[3], zorder = 10, linestyles=[':', '--', 'solid'])
+ax[3].clabel(contours3, inline=True, fontsize=10, fmt="%.2f")
+ax[3].set_xlabel('$R_{proj} / R_{200}$')
+ax[3].set_title('<$P_{IN}$>')
+
+ax[4].pcolormesh(X_edges, Y_edges, mean_ITL_prob.T, cmap="Greys", shading='auto', vmin = 0, vmax = 1)
+contours4 = ax[4].contour(X, Y, mean_ITL_prob.T, levels=[0.2, 0.5, 0.8], colors='black', linestyles = [':','--','solid'], origin='upper')
+ind = np.random.choice(np.arange(len(itl_TNG)), replace = False, size = 1000)
+sns.kdeplot(x=itl_TNG[ind, 4], y=itl_TNG[ind,5], fill=False, alpha = 0.7, color="red", levels=[0.2, 0.5, 0.8], ax = ax[4], zorder = 10, linestyles=[':', '--', 'solid'])
+ax[4].clabel(contours4, inline=True, fontsize=10, fmt="%.2f")
+ax[4].set_xlabel('$R_{proj} / R_{200}$')
+ax[4].set_title('<$P_{ITL}$>')
+
+
+ax[0].set_xlim(0,3)
+ax[0].set_ylim(0,3)
+
+legend_elements = [
+    Line2D([0], [0], color='black', lw=3, label='TNG Density'),
+    mpatches.Patch(color='red', label='Cl Prob TNG300'),
+    mpatches.Patch(color='orange', label='Bs Prob TNG300'),
+    mpatches.Patch(color='green', label='Rin Prob TNG300'),
+    mpatches.Patch(color='blue', label='In Prob TNG300'),
+    mpatches.Patch(color='black', label='Itl Prob TNG300'),
+]
+
+ax[4].legend(handles=legend_elements, loc='upper right',bbox_to_anchor=(2.0, 1.0))
+
+#plt.savefig('../graphs/PredProbabilities_ROGERTNG300_KNN.pdf')
+# -
+
+aux = np.nan_to_num(mean_RIN_prob / mean_CL_prob, nan = 0)
+plt.pcolormesh(X_edges, Y_edges, aux.T, cmap="Oranges", shading='auto')
+#plt.colorbar()
+plt.contour(X, Y, aux.T, levels=[1], colors='red', linestyles = ['solid'], origin='upper')
+plt.xlim(0,3)
+plt.ylim(0,3)
+
+CL_count_TNG, x_edges, y_edges = np.histogram2d(cl_TNG[:,4], cl_TNG[:,5], bins=20)
+BS_count_TNG, _, _ = np.histogram2d(bs_TNG[:,4], bs_TNG[:,5], bins=[x_edges, y_edges])
+RIN_count_TNG, _, _ = np.histogram2d(rin_TNG[:,4], rin_TNG[:,5], bins=[x_edges, y_edges])
+IN_count_TNG, _, _ = np.histogram2d(inf_TNG[:,4], inf_TNG[:,5], bins=[x_edges, y_edges])
+ITL_count_TNG, _, _ = np.histogram2d(itl_TNG[:,4], itl_TNG[:,5], bins=[x_edges, y_edges])
+
+# +
+aux = np.nan_to_num(RIN_count_TNG / (CL_count_TNG + 1), nan = 0)
+plt.pcolormesh(X_edges, Y_edges, aux.T, cmap="Oranges", shading='auto')
+plt.colorbar()
+plt.contour(X, Y, aux.T, levels=[1], colors='red', linestyles = ['solid'], origin='upper')
+plt.xlim(0,3)
+plt.ylim(0,3)
+
+plt.xlabel('$R_{proj} / R_{200}$')
+plt.title('<$N_{RIN} / N_{CL}$>')
+plt.ylabel('$|\Delta V_{los} / \sigma|$')
+
+plt.savefig('../graphs/Number_RIN_CL_TNG300.pdf')
+# -
+
+# # Analysis MLD
+
+cl_ind = np.unique(data_mld[:,0])
+nclusters = len(cl_ind)
+print('There are ' + str(nclusters) + ' clusters')
+
+# +
+ntrain = int(0.7 * nclusters)
+ntest = nclusters - ntrain
+
+np.random.seed(91218)
+random_ind = np.random.choice(cl_ind, replace = False, size = nclusters)
+
+cl_train_ind = random_ind[:ntrain]
+cl_test_ind = random_ind[ntrain:]
+# -
+
+gal_train_ind = np.where(np.isin(data_mld[:,0], cl_train_ind) == True)[0]
+gal_test_ind = np.where(np.isin(data_mld[:,0], cl_test_ind) == True)[0]
 
 gal_test_ind = np.random.choice(gal_test_ind, size = 10000)
 gal_train_ind = np.random.choice(gal_train_ind, size = 100000)
@@ -420,7 +623,7 @@ comments = """
       [:,2] = |\\Delta V| / \\sigma
     """
 
-Roger2 = roger.RogerModel(x_dataset = data[gal_train_ind, 2:], y_dataset = data[gal_train_ind, 1], comments=comments, 
+Roger2 = roger.RogerModel(x_dataset = data_mld[gal_train_ind, 2:], y_dataset = data_mld[gal_train_ind, 1], comments=comments, 
                           ml_models = [KNeighborsClassifier(n_neighbors=63), RandomForestClassifier(max_depth=2, random_state=0)])
 # -
 
@@ -434,15 +637,15 @@ Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN.joblib','../data/
 Roger2.trained
 
 # +
-real_class = data[gal_test_ind, 1]
+real_class_mld = data_mld[gal_test_ind, 1]
 
-pred_class = Roger2.predict_class(data[gal_test_ind, 2:], n_model=0)
-pred_prob = Roger2.predict_prob(data[gal_test_ind, 2:], n_model=0)
+pred_class_mld = Roger2.predict_class(data_mld[gal_test_ind, 2:], n_model=0)
+pred_prob_mld = Roger2.predict_prob(data_mld[gal_test_ind, 2:], n_model=0)
 # +
-real_class_TNG = data_TNG1[:, 2]
+real_class_TNG = data_TNG[:, 2]
 
-pred_class_TNG = Roger2.predict_class(data_TNG1[:, 3:], n_model=0)
-pred_prob_TNG = Roger2.predict_prob(data_TNG1[:, 3:], n_model=0)
+pred_class_TNG = Roger2.predict_class(data_TNG[:, 3:], n_model=0)
+pred_prob_TNG = Roger2.predict_prob(data_TNG[:, 3:], n_model=0)
 
 # +
 readme = '''
@@ -468,6 +671,9 @@ readme = '''
 #%          comments = readme)
 
 #pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
+# -
+
+data_MLD = np.hstack((gal_test_ind.reshape(len(gal_test_ind),1), data_mld[gal_test_ind], pred_prob))
 
 # +
 readme = '''
@@ -499,12 +705,43 @@ np.savetxt('../data/ROGER2_KNN_probabilities_testset_TNG_27_05_26.txt', pr,
 pr1 = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_27_05_26.txt', skiprows = 18)
 # -
 
-pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25_ori.txt', skiprows = 18)
+#pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset_TNG_10_09_25_ori.txt', skiprows = 18)
+pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
 
-pr1 = np.hstack((data_TNG, pred_prob_TNG))
+pr.shape
+
+a = np.array([-0.08, 0.02, -0.04, 0.03, 0.04])
+b = np.array([0.19, 0.24, 0.20, 0.34, 0.39])
 
 
-plt.scatter(data_TNG[:,3], pr1[:,3])
+def threshold(clase, logm):
+    return a[clase - 1]*(logm - 15) + b[clase - 1]
+
+
+# +
+aux_ind = np.where( (pr[:,3] > 15.0) & (pr[:,3] < 15.35) )[0]
+t_min = a*(np.mean(pr[aux_ind,3]) - 15) + b
+
+data_aux = pr[aux_ind]
+
+aux_class = np.argmax(data_aux[:,6:],axis=1) + 1
+# -
+
+len(data_aux)
+
+# +
+real_class = []
+pred_class = []
+for i in range(len(data_aux)):
+    if data_aux[i, (aux_class[i] + 5)] > threshold(aux_class[i], data_aux[i,3]):
+        real_class.append( data_aux[i,2] )
+        pred_class.append( aux_class[i] )
+        
+real_class = np.asarray(real_class)
+pred_class = np.asarray(pred_class)       
+# -
+
+len(real_class)
 
 # +
 conf_mat,_ = Roger2.confusion_matrix(real_class, pred_class)
@@ -538,11 +775,11 @@ ax.set_xlim(0,3)
 ax.set_ylim(0,3)
 
 # +
-mean_CL_prob, x_edges, y_edges, _ = binned_statistic_2d(data[gal_test_ind,3], data[gal_test_ind,4], pred_prob[:,0], statistic='mean', bins=20)
-mean_BS_prob, _, _, _ = binned_statistic_2d(data[gal_test_ind,3], data[gal_test_ind,4], pred_prob[:,1], statistic='mean', bins=[x_edges, y_edges])
-mean_RIN_prob, _, _, _ = binned_statistic_2d(data[gal_test_ind,3], data[gal_test_ind,4], pred_prob[:,2], statistic='mean', bins=[x_edges, y_edges])
-mean_IN_prob, _, _, _ = binned_statistic_2d(data[gal_test_ind,3], data[gal_test_ind,4], pred_prob[:,3], statistic='mean', bins=[x_edges, y_edges])
-mean_ITL_prob, _, _, _ = binned_statistic_2d(data[gal_test_ind,3], data[gal_test_ind,4], pred_prob[:,4], statistic='mean', bins=[x_edges, y_edges])
+mean_CL_prob, x_edges, y_edges, _ = binned_statistic_2d(data_mld[gal_test_ind,3], data_mld[gal_test_ind,4], pred_prob_mld[:,0], statistic='mean', bins=20)
+mean_BS_prob, _, _, _ = binned_statistic_2d(data_mld[gal_test_ind,3], data_mld[gal_test_ind,4], pred_prob_mld[:,1], statistic='mean', bins=[x_edges, y_edges])
+mean_RIN_prob, _, _, _ = binned_statistic_2d(data_mld[gal_test_ind,3], data_mld[gal_test_ind,4], pred_prob_mld[:,2], statistic='mean', bins=[x_edges, y_edges])
+mean_IN_prob, _, _, _ = binned_statistic_2d(data_mld[gal_test_ind,3], data_mld[gal_test_ind,4], pred_prob_mld[:,3], statistic='mean', bins=[x_edges, y_edges])
+mean_ITL_prob, _, _, _ = binned_statistic_2d(data_mld[gal_test_ind,3], data_mld[gal_test_ind,4], pred_prob_mld[:,4], statistic='mean', bins=[x_edges, y_edges])
 
 X_edges, Y_edges = np.meshgrid(x_edges, y_edges)
 
@@ -557,7 +794,7 @@ plt.subplots_adjust(wspace = 0.1)
 ax[0].pcolormesh(X_edges, Y_edges, mean_CL_prob.T, cmap="Reds", shading='auto', vmin = 0, vmax = 1)
 contours0 = ax[0].contour(X, Y, mean_CL_prob.T, levels=[0.2, 0.5, 0.8], colors='red', linestyles = [':','--','solid'], origin='upper')
 ind = np.random.choice(np.arange(len(cl)), replace = False, size = 1000)
-sns.kdeplot(x=cl[ind, 3], y=cl[ind, 4], fill=False, alpha = 0.7, color="black", levels=3, ax = ax[0], zorder = 10, linestyles=['--', '-', 'solid'])
+sns.kdeplot(x=cl[ind, 3], y=cl[ind, 4], fill=False, alpha = 0.7, color="black", levels=[0.2, 0.5, 0.8], ax = ax[0], zorder = 10, linestyles=[':', '--', 'solid'])
 ax[0].clabel(contours0, inline=True, fontsize=10, fmt="%.2f")
 ax[0].set_xlabel('$R_{proj} / R_{200}$')
 ax[0].set_ylabel('$|\Delta V_{los} / \sigma|$')
@@ -566,7 +803,7 @@ ax[0].set_title('<$P_{CL}$>')
 ax[1].pcolormesh(X_edges, Y_edges, mean_BS_prob.T, cmap="Oranges", shading='auto', vmin = 0, vmax = 1)
 contours1 = ax[1].contour(X, Y, mean_BS_prob.T, levels=[0.2, 0.5, 0.8], colors='orange', linestyles = [':','--','solid'], origin='upper')
 ind = np.random.choice(np.arange(len(bs)), replace = False, size = 1000)
-sns.kdeplot(x=bs[ind, 3], y=bs[ind, 4], fill=False, alpha = 0.7, color="black", levels=3, ax = ax[1], zorder = 10, linestyles=['--', '-', 'solid'])
+sns.kdeplot(x=bs[ind, 3], y=bs[ind, 4], fill=False, alpha = 0.7, color="black", levels=[0.2, 0.5, 0.8], ax = ax[1], zorder = 10, linestyles=[':', '--', 'solid'])
 ax[1].clabel(contours1, inline=True, fontsize=10, fmt="%.2f")
 ax[1].set_xlabel('$R_{proj} / R_{200}$')
 ax[1].set_title('<$P_{BS}$>')
@@ -574,7 +811,7 @@ ax[1].set_title('<$P_{BS}$>')
 ax[2].pcolormesh(X_edges, Y_edges, mean_RIN_prob.T, cmap="Greens", shading='auto', vmin = 0, vmax = 1)
 contours2 = ax[2].contour(X, Y, mean_RIN_prob.T, levels=[0.2, 0.5, 0.8], colors='green', linestyles = [':','--','solid'], origin='upper')
 ind = np.random.choice(np.arange(len(rin)), replace = False, size = 1000)
-sns.kdeplot(x=rin[ind, 3], y=rin[ind, 4], fill=False, alpha = 0.7, color="black", levels=3, ax = ax[2], zorder = 10, linestyles=['--', '-', 'solid'])
+sns.kdeplot(x=rin[ind, 3], y=rin[ind, 4], fill=False, alpha = 0.7, color="black", levels=[0.2, 0.5, 0.8], ax = ax[2], zorder = 10, linestyles=[':', '--', 'solid'])
 ax[2].clabel(contours2, inline=True, fontsize=10, fmt="%.2f")
 ax[2].set_xlabel('$R_{proj} / R_{200}$')
 ax[2].set_title('<$P_{RIN}$>')
@@ -582,7 +819,7 @@ ax[2].set_title('<$P_{RIN}$>')
 ax[3].pcolormesh(X_edges, Y_edges, mean_IN_prob.T, cmap="Blues", shading='auto', vmin = 0, vmax = 1)
 contours3 = ax[3].contour(X, Y, mean_IN_prob.T, levels=[0.2, 0.5, 0.8], colors='blue', linestyles = [':','--','solid'], origin='upper')
 ind = np.random.choice(np.arange(len(inf)), replace = False, size = 1000)
-sns.kdeplot(x=inf[ind, 3], y=inf[ind, 4], fill=False, alpha = 0.7, color="black", levels=3, ax = ax[3], zorder = 10, linestyles=['--', '-', 'solid'])
+sns.kdeplot(x=inf[ind, 3], y=inf[ind, 4], fill=False, alpha = 0.7, color="black", levels=[0.2, 0.5, 0.8], ax = ax[3], zorder = 10, linestyles=[':', '--', 'solid'])
 ax[3].clabel(contours3, inline=True, fontsize=10, fmt="%.2f")
 ax[3].set_xlabel('$R_{proj} / R_{200}$')
 ax[3].set_title('<$P_{IN}$>')
@@ -590,7 +827,7 @@ ax[3].set_title('<$P_{IN}$>')
 ax[4].pcolormesh(X_edges, Y_edges, mean_ITL_prob.T, cmap="Greys", shading='auto', vmin = 0, vmax = 1)
 contours4 = ax[4].contour(X, Y, mean_ITL_prob.T, levels=[0.2, 0.5, 0.8], colors='black', linestyles = [':','--','solid'], origin='upper')
 ind = np.random.choice(np.arange(len(itl)), replace = False, size = 1000)
-sns.kdeplot(x=itl[ind, 3], y=itl[ind, 4], fill=False, alpha = 0.7, color="red", levels=3, ax = ax[4], zorder = 10, linestyles=['--', '-', 'solid'])
+sns.kdeplot(x=itl[ind, 3], y=itl[ind, 4], fill=False, alpha = 0.7, color="red", levels=[0.2, 0.5, 0.8], ax = ax[4], zorder = 10, linestyles=[':', '--', 'solid'])
 ax[4].clabel(contours4, inline=True, fontsize=10, fmt="%.2f")
 ax[4].set_xlabel('$R_{proj} / R_{200}$')
 ax[4].set_title('<$P_{ITL}$>')
@@ -598,8 +835,48 @@ ax[4].set_title('<$P_{ITL}$>')
 
 ax[0].set_xlim(0,3)
 ax[0].set_ylim(0,3)
-plt.savefig('PredProbabilities_ROGER2_KNN.pdf')
+
+legend_elements = [
+    Line2D([0], [0], color='black', lw=3, label='MLD Density'),
+    mpatches.Patch(color='red', label='Cl Prob MLD'),
+    mpatches.Patch(color='orange', label='Bs Prob MLD'),
+    mpatches.Patch(color='green', label='Rin Prob MLD'),
+    mpatches.Patch(color='blue', label='In Prob MLD'),
+    mpatches.Patch(color='black', label='Itl Prob MLD'),
+]
+
+ax[4].legend(handles=legend_elements, loc='upper right',bbox_to_anchor=(1.8, 1.0))
+
+
+plt.savefig('../graphs/PredProbabilities_ROGER2_KNN.pdf')
 # -
+aux = np.nan_to_num(mean_RIN_prob / mean_CL_prob, nan = 0)
+plt.pcolormesh(X_edges, Y_edges, aux.T, cmap="Oranges", shading='auto')
+plt.colorbar()
+plt.contour(X, Y, aux.T, levels=[1], colors='red', linestyles = [':','--','solid'], origin='upper')
+
+
+CL_count_mld, x_edges, y_edges = np.histogram2d(cl_mld[:,3], cl_mld[:,4], bins=20)
+BS_count_mld, _, _ = np.histogram2d(bs_mld[:,3], bs_mld[:,4], bins=[x_edges, y_edges])
+RIN_count_mld, _, _ = np.histogram2d(rin_mld[:,3], rin_mld[:,4], bins=[x_edges, y_edges])
+IN_count_mld, _, _ = np.histogram2d(inf_mld[:,3], inf_mld[:,4], bins=[x_edges, y_edges])
+ITL_count_mld, _, _ = np.histogram2d(itl_mld[:,3], itl_mld[:,4], bins=[x_edges, y_edges])
+
+# +
+aux = np.nan_to_num(RIN_count_mld / (CL_count_mld + 1), nan = 0)
+plt.pcolormesh(X_edges, Y_edges, aux.T, cmap="Oranges", shading='auto')
+plt.colorbar()
+plt.contour(X, Y, aux.T, levels=[1], colors='red', linestyles = ['solid'], origin='upper')
+plt.xlim(0,3)
+plt.ylim(0,3)
+
+plt.xlabel('$R_{proj} / R_{200}$')
+plt.title('<$N_{RIN} / N_{CL}$>')
+plt.ylabel('$|\Delta V_{los} / \sigma|$')
+
+plt.savefig('../graphs/Number_RIN_CL_mld.pdf')
+# -
+
 # ## Let's optimize the thresholds
 
 cm, pr = Roger2.confusion_matrix(thresholds = np.array([0.5, 0.5, 0.5, 0.5, 0.5]), pred_prob = pred_prob, real_class = real_class)
