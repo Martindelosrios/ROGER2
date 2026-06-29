@@ -171,7 +171,7 @@ data_TNG[:,3] = data_TNG[:,3]
 
 data_TNG = data_TNG[:,:-2] # Solo para el archivo sin orphans
 
-data_TNG[:,5
+np.max(data_TNG, axis = 0)
 
 # +
 cl_TNG  = data_TNG[np.where(data_TNG[:,2] == 1)[0]]
@@ -410,12 +410,12 @@ comments = """
       [:,2] = |\\Delta V| / \\sigma
     """
 
-RogerTNG300_wo = roger.RogerModel(x_dataset = data_TNG[gal_train_ind, 3:], y_dataset = data_TNG[gal_train_ind, 2], comments=comments, 
+RogerTNG300 = roger.RogerModel(x_dataset = data_TNG[gal_train_ind, 3:], y_dataset = data_TNG[gal_train_ind, 2], comments=comments, 
                           ml_models = [KNeighborsClassifier(n_neighbors=63), RandomForestClassifier(max_depth=2, random_state=0)])
 # -
 
 #RogerTNG300.train(path_to_saved_model = ['../data/models/rogerTNG300_KNN.joblib','../data/models/rogerTNG300_RF.joblib'])
-RogerTNG300_wo.train(path_to_save = ['../data/models/rogerTNG300_KNN.joblib','../data/models/rogerTNG300_RF.joblib'])
+RogerTNG300.train(path_to_save = ['../data/models/rogerTNG300_KNN.joblib','../data/models/rogerTNG300_RF.joblib'])
 
 RogerTNG300.trained
 
@@ -433,19 +433,11 @@ plot_confusion_matrix(conf_mat_TNG, show_absolute=True, show_normed=True, class_
 plt.savefig('../graphs/confusionMatrix_TNG_ROGERTNG300_KNN.pdf')
 
 # +
-random_ind = np.random.randint(0, len(data), 10000)
-real_class_MLD = data[random_ind, 1]
+random_ind = np.random.randint(0, len(data_mld), 10000)
+real_class_MLD = data_mld[random_ind, 1]
 
-pred_class_MLD = RogerTNG300.predict_class(data[random_ind, 2:], n_model=0)
-pred_prob_MLD = RogerTNG300.predict_prob(data[random_ind, 2:], n_model=0)
-
-# +
-# data_TNG[:,0] =  halo ID
-# data_TNG[:,1] =  subhalo ID
-# data_TNG[:,2] =  clasificacion real de la galaxia (CL = 1, BS = 2, RIN = 3, IN = 4, ITL = 5)
-# data_TNG[:,3] = log masa del cumulo
-# data_TNG[:,4] = rp/R200
-# data_TNG[:,5] = |Delta V|/sigma
+pred_class_MLD = RogerTNG300.predict_class(data_mld[random_ind, 2:], n_model=0)
+pred_prob_MLD = RogerTNG300.predict_prob(data_mld[random_ind, 2:], n_model=0)
 
 # +
 readme = '''
@@ -673,7 +665,7 @@ readme = '''
 #pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
 # -
 
-data_MLD = np.hstack((gal_test_ind.reshape(len(gal_test_ind),1), data_mld[gal_test_ind], pred_prob))
+data_MLD = np.hstack((gal_test_ind.reshape(len(gal_test_ind),1), data_mld[gal_test_ind], pred_prob_mld))
 
 # +
 readme = '''
@@ -710,6 +702,8 @@ pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
 
 pr.shape
 
+plt.scatter(pr[:1000,10], data_MLD[:1000,10])
+
 a = np.array([-0.08, 0.02, -0.04, 0.03, 0.04])
 b = np.array([0.19, 0.24, 0.20, 0.34, 0.39])
 
@@ -719,12 +713,10 @@ def threshold(clase, logm):
 
 
 # +
-aux_ind = np.where( (pr[:,3] > 15.0) & (pr[:,3] < 15.35) )[0]
-t_min = a*(np.mean(pr[aux_ind,3]) - 15) + b
+aux_ind = np.where( (pr[:,3] >= 15.0) & (pr[:,3] < 15.5) )[0]
 
 data_aux = pr[aux_ind]
-
-aux_class = np.argmax(data_aux[:,6:],axis=1) + 1
+aux_class = np.argmax(data_aux[:,6:],axis=1) + 1 # Just the max prob
 # -
 
 len(data_aux)
@@ -733,22 +725,27 @@ len(data_aux)
 real_class = []
 pred_class = []
 for i in range(len(data_aux)):
-    if data_aux[i, (aux_class[i] + 5)] > threshold(aux_class[i], data_aux[i,3]):
+    if data_aux[i, (aux_class[i] + 5)] >= threshold(aux_class[i], data_aux[i,3]):
         real_class.append( data_aux[i,2] )
         pred_class.append( aux_class[i] )
         
 real_class = np.asarray(real_class)
-pred_class = np.asarray(pred_class)       
+pred_class = np.asarray(pred_class)
+
+conf_mat,_ = Roger2.confusion_matrix(pred_class, real_class)
+plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True, class_names=labels)
 # -
+
+conf_mat
 
 len(real_class)
 
 # +
-conf_mat,_ = Roger2.confusion_matrix(real_class, pred_class)
+conf_mat,_ = Roger2.confusion_matrix(real_class_mld, pred_class_mld)
 
 plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True, class_names=labels)
 
-#plt.savefig('../graphs/confusionMatrix_ROGER2_KNN.pdf')
+plt.savefig('../graphs/confusionMatrix_MLD_ROGER2_KNN.pdf')
 # +
 conf_mat_TNG,_ = Roger2.confusion_matrix(real_class_TNG, pred_class_TNG)
 
