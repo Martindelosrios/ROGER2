@@ -116,7 +116,7 @@ nclusters = len(cl_ind)
 print('There are ' + str(nclusters) + ' clusters')
 
 # +
-ntrain = int(0.8 * nclusters)
+ntrain = int(0.7 * nclusters)
 ntest = ntrain#nclusters - ntrain
 
 np.random.seed(91218)
@@ -131,6 +131,8 @@ gal_test_ind = np.where(np.isin(data_train[:,0], cl_test_ind) == True)[0]
 gal_test_ind = np.random.choice(gal_test_ind, size = 1000)
 # -
 
+print(len(gal_train_ind))
+
 print(np.min(data_train[gal_train_ind, 2:], axis = 0))
 print(np.max(data_train[gal_train_ind, 2:], axis = 0))
 
@@ -140,8 +142,11 @@ comments = """
       bigger than >10^{13} M_{sun}.
     """
 
+#Roger2 = roger.RogerModel(x_dataset = data_train[gal_train_ind, 2:], y_dataset = data_train[gal_train_ind, 1], comments=comments, 
+#                          ml_models = [KNeighborsClassifier(n_neighbors=63), RandomForestClassifier(max_depth=2, random_state=0)])
+
 Roger2 = roger.RogerModel(x_dataset = data_train[gal_train_ind, 2:], y_dataset = data_train[gal_train_ind, 1], comments=comments, 
-                          ml_models = [KNeighborsClassifier(n_neighbors=63), RandomForestClassifier(max_depth=2, random_state=0)])
+                          ml_models = [KNeighborsClassifier(n_neighbors=63)])
 # -
 
 cl_ind = np.where(data_train[:,1] == 1)[0] 
@@ -156,11 +161,16 @@ print('Hay {:.2f} recent infalling galaxies'.format(len(rin_ind) / len(data_trai
 print('Hay {:.2f} infalling galaxies'.format(len(in_ind) / len(data_train)))
 print('Hay {:.2f} interloper galaxies'.format(len(itl_ind) / len(data_train)))
 
-Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN_tiny.joblib','../data/models/roger2_RF_tiny.joblib'])
+Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN.joblib'])
+#Roger2.train(path_to_save = ['../data/models/roger2_KNN_new0.7.joblib'])
+#Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN_tiny.joblib','../data/models/roger2_RF_tiny.joblib'])
+
+# !ls ../data/
 
 # +
 # gama data
-data_aux = np.loadtxt(DATA_PATH + 'gal_gama_25_07.dat')
+#data_aux = np.loadtxt(DATA_PATH + 'gal_gama_30_06_26.dat')
+data_aux = np.loadtxt(DATA_PATH + 'gal_gama.dat')
 
 # data_aux[:,0] = rp/R200
 # data_aux[:,1] = |Delta V|/sigma
@@ -205,11 +215,83 @@ readme = '''
          P_in: Probability of being an infalling galaxy.
          P_itl: Probability of being a iterloper galaxy.
          '''
-np.savetxt('../data/ROGER2_KNN_probabilities_gama_v2.txt',  np.hstack((data, pred_class.reshape(len(pred_class), 1), pred_prob)),
+np.savetxt('../data/ROGER2_KNN_probabilities_gama_full.txt',  np.hstack((data, pred_class.reshape(len(pred_class), 1), pred_prob)),
           header = 'LogM R/R200 V/sigma ID Pred_class P_cl P_bs P_rin P_in P_itl',
           comments = readme)
 
 #pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
+# -
+pr0 = np.hstack((data, pred_class.reshape(len(pred_class), 1), pred_prob))
+
+prnew07 = np.hstack((data, pred_class.reshape(len(pred_class), 1), pred_prob))
+
+
+pr = np.loadtxt('../data/ROGER2_KNN_probabilities_gama_30_06_26_.txt', skiprows = 16)
+
+
+pr1 = np.loadtxt('../data/ROGER2_KNN_probabilities_gama.txt')
+
+pr0.shape
+
+prnew.shape
+
+
+pr1[:,:3].shape
+
+pr.shape
+
+# +
+aaux = pr
+baux = prnew07
+a = aaux[:,1:3]
+b = baux[:,1:3]
+dtype = np.dtype([('x', a.dtype), ('y', b.dtype)])
+
+_, ia, ib = np.intersect1d(
+    a.view(dtype),
+    b.view(dtype),
+    return_indices=True
+)
+
+fig,ax = plt.subplots(2,3)
+
+ax[0,0].scatter(aaux[ia,5], baux[ib,5])
+ax[0,0].plot([0,1], [0,1], color = 'red')
+
+ax[0,1].scatter(aaux[ia,6], baux[ib,6])
+ax[0,1].plot([0,1], [0,1], color = 'red')
+
+ax[0,2].scatter(aaux[ia,7], baux[ib,7])
+ax[0,2].plot([0,1], [0,1], color = 'red')
+
+ax[1,0].scatter(aaux[ia,8], baux[ib,8])
+ax[1,0].plot([0,1], [0,1], color = 'red')
+
+ax[1,1].scatter(aaux[ia,9], baux[ib,9])
+ax[1,1].plot([0,1], [0,1], color = 'red')
+
+#plt.savefig('../graphs/comparacion_probalities.pdf')
+
+
+# +
+a = pr0[:,1:3]
+b = pr[:,1:3]
+dtype = np.dtype([('x', a.dtype), ('y', b.dtype)])
+
+_, ia, ib = np.intersect1d(
+    a.view(dtype),
+    b.view(dtype),
+    return_indices=True
+)
+
+fig,ax = plt.subplots(2,3)
+
+ax[0,0].scatter(pr0[ia,4], pr[ib,4])
+ax[0,1].scatter(pr0[ia,5], pr[ib,5])
+ax[0,2].scatter(pr0[ia,6], pr[ib,6])
+ax[1,0].scatter(pr0[ia,7], pr[ib,7])
+ax[1,1].scatter(pr0[ia,8], pr[ib,8])
+ax[1,2].scatter(pr0[ia,9], pr[ib,9])
 # -
 
 
