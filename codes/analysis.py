@@ -27,6 +27,8 @@ from pyROGER import roger
 from pyROGER import models
 # -
 
+models.list_saved_models()
+
 # ## Custom functions
 
 # +
@@ -192,11 +194,11 @@ print('Hay ' + str(len(itl_TNG)) + ' interlooper galaxies, the ', str(100*len(it
 # +
 fig,ax = plt.subplots(1,5, sharex = True, sharey = True, figsize = (14,3))
 
-ax[0].scatter(cl[:,3], cl[:,4], c = cl_col)
-ax[1].scatter(bs[:,3], bs[:,4], c = bs_col, marker = '*')
-ax[2].scatter(rin[:,3], rin[:,4], c = rin_col, marker = '+')
-ax[3].scatter(inf[:,3], inf[:,4], c = inf_col, marker = '<')
-ax[4].scatter(itl[:,3], itl[:,4], c = itl_col, marker = '>')
+ax[0].scatter(cl_mld[:,3], cl_mld[:,4], c = cl_col)
+ax[1].scatter(bs_mld[:,3], bs_mld[:,4], c = bs_col, marker = '*')
+ax[2].scatter(rin_mld[:,3], rin_mld[:,4], c = rin_col, marker = '+')
+ax[3].scatter(inf_mld[:,3], inf_mld[:,4], c = inf_col, marker = '<')
+ax[4].scatter(itl_mld[:,3], itl_mld[:,4], c = itl_col, marker = '>')
 
 ax[0].set_xlabel('$r / R_{200}$', fontsize = 12)
 ax[1].set_xlabel('$r / R_{200}$', fontsize = 12)
@@ -211,25 +213,25 @@ mpl.colormaps['Reds'](1)
 # +
 fig,ax = plt.subplots(1,1, sharex = True, sharey = True, figsize = (4,4))
 
-ind = np.random.choice(np.arange(len(cl)), replace = False, size = 1000)
-sns.kdeplot(x=cl[ind, 3], y=cl[ind, 4], fill=True, alpha = 0.7, cmap='Reds', levels=3, ax = ax, zorder = 4)
-sns.kdeplot(x=cl[ind, 3], y=cl[ind, 4], fill=False, alpha = 0.7, color='red', levels=3, ax = ax, zorder = 4, linestyles=['--', '-', 'solid'])
+ind = np.random.choice(np.arange(len(cl_mld)), replace = False, size = 1000)
+sns.kdeplot(x=cl_mld[ind, 3], y=cl_mld[ind, 4], fill=True, alpha = 0.7, cmap='Reds', levels=3, ax = ax, zorder = 4)
+sns.kdeplot(x=cl_mld[ind, 3], y=cl_mld[ind, 4], fill=False, alpha = 0.7, color='red', levels=3, ax = ax, zorder = 4, linestyles=['--', '-', 'solid'])
 
-ind = np.random.choice(np.arange(len(bs)), replace = False, size = 1000)
-sns.kdeplot(x=bs[ind, 3], y=bs[ind, 4], fill=True, alpha = 0.7, cmap="Oranges", levels=3, ax = ax, zorder = 2)
-sns.kdeplot(x=bs[ind, 3], y=bs[ind, 4], fill=False, alpha = 0.7, color="orange", levels=3, ax = ax, zorder = 6, linestyles=['--', '-', 'solid'])
+ind = np.random.choice(np.arange(len(bs_mld)), replace = False, size = 1000)
+sns.kdeplot(x=bs_mld[ind, 3], y=bs_mld[ind, 4], fill=True, alpha = 0.7, cmap="Oranges", levels=3, ax = ax, zorder = 2)
+sns.kdeplot(x=bs_mld[ind, 3], y=bs_mld[ind, 4], fill=False, alpha = 0.7, color="orange", levels=3, ax = ax, zorder = 6, linestyles=['--', '-', 'solid'])
 
-ind = np.random.choice(np.arange(len(rin)), replace = False, size = 1000)
-sns.kdeplot(x=rin[ind, 3], y=rin[ind, 4], fill=True, alpha = 0.7, cmap='Greens', levels=3, ax = ax, zorder = 3)
-sns.kdeplot(x=rin[ind, 3], y=rin[ind, 4], fill=False, alpha = 0.7, color='green', levels=3, ax = ax, zorder = 3, linestyles=['--', '-', 'solid'])
+ind = np.random.choice(np.arange(len(rin_mld)), replace = False, size = 1000)
+sns.kdeplot(x=rin_mld[ind, 3], y=rin_mld[ind, 4], fill=True, alpha = 0.7, cmap='Greens', levels=3, ax = ax, zorder = 3)
+sns.kdeplot(x=rin_mld[ind, 3], y=rin_mld[ind, 4], fill=False, alpha = 0.7, color='green', levels=3, ax = ax, zorder = 3, linestyles=['--', '-', 'solid'])
 
-ind = np.random.choice(np.arange(len(inf)), replace = False, size = 1000)
-sns.kdeplot(x=inf[ind, 3], y=inf[ind, 4], fill=True, alpha = 0.7, cmap="Blues", levels=3, ax = ax, zorder = 1)
-sns.kdeplot(x=inf[ind, 3], y=inf[ind, 4], fill=False, alpha = 0.7, color="blue", levels=3, ax = ax, zorder = 5, linestyles=['--', '-', 'solid'])
+ind = np.random.choice(np.arange(len(inf_mld)), replace = False, size = 1000)
+sns.kdeplot(x=inf_mld[ind, 3], y=inf_mld[ind, 4], fill=True, alpha = 0.7, cmap="Blues", levels=3, ax = ax, zorder = 1)
+sns.kdeplot(x=inf_mld[ind, 3], y=inf_mld[ind, 4], fill=False, alpha = 0.7, color="blue", levels=3, ax = ax, zorder = 5, linestyles=['--', '-', 'solid'])
 
-ind = np.random.choice(np.arange(len(itl)), replace = False, size = 1000)
-sns.kdeplot(x=itl[ind, 3], y=itl[ind, 4], fill=True, alpha = 0.7, cmap="Greys", levels=3, ax = ax, zorder = 0)
-sns.kdeplot(x=itl[ind, 3], y=itl[ind, 4], fill=False, alpha = 0.7, color="grey", levels=3, ax = ax, zorder = 0, linestyles=['--', '-', 'solid'])
+ind = np.random.choice(np.arange(len(itl_mld)), replace = False, size = 1000)
+sns.kdeplot(x=itl_mld[ind, 3], y=itl_mld[ind, 4], fill=True, alpha = 0.7, cmap="Greys", levels=3, ax = ax, zorder = 0)
+sns.kdeplot(x=itl_mld[ind, 3], y=itl_mld[ind, 4], fill=False, alpha = 0.7, color="grey", levels=3, ax = ax, zorder = 0, linestyles=['--', '-', 'solid'])
 
 ax.set_xlabel('$r / R_{200}$', fontsize = 12)
 ax.set_ylabel('$v / \sigma$', fontsize = 12)
@@ -621,9 +623,48 @@ Roger2 = roger.RogerModel(x_dataset = data_mld[gal_train_ind, 2:], y_dataset = d
 
 Roger2.ml_models
 
+# +
+comments = """ 
+      ROGER1 model for isolated galaxy clusters with masses
+      bigger than >10^{14} M_{sun}.
+      The input must be a np.array with shape (Nobs, 2), where
+      [:,1] = R / R_{200}
+      [:,2] = |\\Delta V| / \\sigma
+    """
+
+Roger1 = roger.RogerModel(x_dataset = data_mld[gal_train_ind, 3:], y_dataset = data_mld[gal_train_ind, 1], comments=comments, 
+                          ml_models = [KNeighborsClassifier(n_neighbors=63), RandomForestClassifier(max_depth=2, random_state=0)])
+
+Roger1.train(path_to_saved_model = ['/home/mdelosrios/trabajos/pyROGER/pyROGER/dataset/HighMassRoger1_KNN.joblib',
+                                    '/home/mdelosrios/trabajos/pyROGER/pyROGER/dataset/HighMassRoger1_RF.joblib'])
+
+real_class_mld = data_mld[gal_test_ind, 1]
+
+pred_class_mld_1 = Roger1.predict_class(data_mld[gal_test_ind, 3:], n_model=0) + 1
+pred_prob_mld_1 = Roger1.predict_prob(data_mld[gal_test_ind, 3:], n_model=0)
+
+aux = np.copy(pred_class_mld_1)
+
+ind = np.where(pred_class_mld_1 == 2)[0] # Las que roger 1 dice que son rin
+aux[ind] = 3 # Para roger2 las rin son clase 3
+
+ind = np.where(pred_class_mld_1 == 3)[0] # Las que roger 1 dice que son bs
+aux[ind] = 2 # Para roger2 las bs son clase 2
+
+pred_class_mld_1 = aux
+
+conf_mat,_ = Roger1.confusion_matrix(real_class_mld, pred_class_mld_1)
+
+plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True, class_names=labels)
+
+plt.savefig('../graphs/confusionMatrix_MLD_ROGER1_KNN.pdf')
+# -
+
 # !ls ../data/models
 
-Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
+'/home/mdelosrios/trabajos/pyROGER/pyROGER/dataset/roger2_KNN.joblib'
+
+Roger2.train(path_to_saved_model = ['/home/mdelosrios/trabajos/pyROGER/pyROGER/dataset/roger2_KNN.joblib','../data/models/roger2_RF.joblib'])
 #Roger2.train(path_to_save = ['../data/models/roger2_KNN_tiny.joblib','../data/models/roger2_RF_tiny.joblib'])
 
 Roger2.trained
@@ -702,7 +743,7 @@ pr = np.loadtxt('../data/ROGER2_KNN_probabilities_testset.txt', skiprows = 18)
 
 pr.shape
 
-plt.scatter(pr[:1000,10], data_MLD[:1000,10])
+plt.scatter(pred_prob_mld1[:,3], pred_prob_mld[:,3])
 
 a = np.array([-0.08, 0.02, -0.04, 0.03, 0.04])
 b = np.array([0.19, 0.24, 0.20, 0.34, 0.39])
