@@ -168,6 +168,7 @@ Roger2.train(path_to_saved_model = ['../data/models/roger2_KNN.joblib'])
 # !ls ../data/
 
 # +
+h = 0.678 # Planck  y multidark
 # gama data
 #data_aux = np.loadtxt(DATA_PATH + 'gal_gama_30_06_26.dat')
 data_aux = np.loadtxt(DATA_PATH + 'gal_gama.dat')
@@ -180,7 +181,7 @@ data_aux = np.loadtxt(DATA_PATH + 'gal_gama.dat')
 # +
 data = np.copy(data_aux)
 
-data[:,0] = data_aux[:,2] 
+data[:,0] = data_aux[:,2] * h # Tengo q multiplicar por h por q en roger las unidades estan en [Msun/h] y en gama en [Msun]
 data[:,1] = data_aux[:,0] 
 data[:,2] = data_aux[:,1] 
 # -
@@ -191,6 +192,66 @@ print(np.min(data[:,:-1], axis = 0))
 print(np.max(data[:,:-1], axis = 0))
 
 # # Analysis
+
+# +
+path = '../data/modelos_roger2'
+niter = 10
+
+pred_prob_list = []
+for i in range(niter):
+  print(i)
+  roger2 = models.Roger2
+  roger2.train(path_to_saved_model = [path + f'/roger2_KNN_{i}.joblib', path + f'/roger2_RF_{i}.joblib'])
+
+  pred_prob_list.append( roger2.predict_prob(data[:,:-1], n_model = 0) )
+# -
+
+pred_prob_list = np.asarray(pred_prob_list)
+pred_prob = np.mean(pred_prob_list, axis = 0)
+pred_prob_sd = np.std(pred_prob_list, axis = 0)
+
+# +
+readme = '''
+         Data set used for testing ROGER2. Results corresponding to the averaged of 10 KNN method.
+
+         Columns:
+         -------
+         LogM: Log10 of the cluster mass. [Msun/h]
+         R/R200: Galaxy radial distance to the cluster center, normalized to R200.
+         V/sigma: Galaxy relative velocity to cluster center normalized to cluster velocity dispersion.
+         ID: Galaxy ID.
+         P_cl: Probability of being a cluster galaxy.
+         P_bs: Probability of being a backsplash galaxy.
+         P_rin: Probability of being a recent infaller galaxy.
+         P_in: Probability of being an infalling galaxy.
+         P_itl: Probability of being a iterloper galaxy.
+         P_cl_sd: Standard deviation of the probability of being a cluster galaxy.
+         P_bs_sd: Standard deviation of the probability of being a backsplash galaxy.
+         P_rin_sd: Standard deviation of the probability of being a recent infaller galaxy.
+         P_in_sd: Standard deviation of the probability of being an infalling galaxy.
+         P_itl_sd: Standard deviation of the probability of being a iterloper galaxy.
+         '''
+np.savetxt('../data/ROGER2_KNN_probabilities_gama_averaged.txt',  np.hstack((data, pred_prob, pred_prob_sd)),
+          header = 'LogM R/R200 V/sigma ID P_cl P_bs P_rin P_in P_itl P_cl_sd P_bs_sd P_rin_sd P_in_sd P_itl_sd',
+          comments = readme)
+
+#pr = np.loadtxt('../data/ROGER2_KNN_probabilities_gama_full_averaged.txt', skiprows = 20)
+# -
+
+np.array_equal(pr[:,4:9], pred_prob)
+
+pr = np.loadtxt('../data/ROGER2_KNN_probabilities_gama_averaged.txt', skiprows = 20)
+class0 = np.argmax(pr[:,4:9],axis=1) + 1
+
+pr1 = np.loadtxt('../data/ROGER2_KNN_probabilities_gama_full.txt', skiprows = 16)
+class1 = np.argmax(pr1[:,5:10],axis=1) + 1
+
+conf_mat = sk.metrics.confusion_matrix(class0, class1)
+plot_confusion_matrix(conf_mat, show_absolute=True, show_normed=True)
+plt.savefig('../graphs/conf_matrix_gama.pdf')
+
+plt.scatter(pr[:,5], pr1[:,6])
+#plt.plot([8,10],[8,10])
 
 Roger2.ml_models
 
